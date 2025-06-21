@@ -311,6 +311,7 @@ export async function searchMusic(
 
   const songs: any[] = [];
   const songsArray = rawData?.result?.songs;
+  const songCount = rawData?.result?.songCount;
 
   if (Array.isArray(songsArray)) {
     songsArray.forEach((song: any) => {
@@ -324,7 +325,7 @@ export async function searchMusic(
     });
   }
 
-  return { data: songs, cookie: updatedCookies };
+  return { data: { songs, songCount }, cookie: updatedCookies };
 }
 
 export async function searchPlaylist(
