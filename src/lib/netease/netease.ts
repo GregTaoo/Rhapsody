@@ -42,7 +42,7 @@ function formattedTime(timestamp: number | string): string {
   return `${year}-${month}-${day}`;
 }
 
-type ApiResponse<T = any> = {
+export type ApiResponse<T = any> = {
   data: T;
   cookie: string[];
 };
@@ -103,7 +103,7 @@ async function postForm(
   const fullCookie = ensureInitCookies(cookie);
   const cookieHeader = fullCookie.join('; ');
 
-  const res: AxiosResponse = await axios.postForm(
+  const res: AxiosResponse = await axios.post(
       url,
       new URLSearchParams(data as Record<string, string>).toString(),
       {
