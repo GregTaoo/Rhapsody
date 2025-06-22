@@ -13,12 +13,8 @@ interface PlaylistDetailProps {
 }
 
 export const PlaylistDetail: React.FC<PlaylistDetailProps> = ({
-                                                                id,
-                                                                isAlbum,
-                                                                handlePlayAndAddToList,
-                                                                callNeteaseApi,
-                                                                setError,
-                                                              }) => {
+  id, isAlbum, handlePlayAndAddToList, handlePlayListSwitch, callNeteaseApi, setError
+}) => {
   const [songs, setSongs] = useState<Music[]>([]);
   const [listName, setListName] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
@@ -55,9 +51,16 @@ export const PlaylistDetail: React.FC<PlaylistDetailProps> = ({
         ) : (
             songs.length > 0 && (
                 <>
-                  <h3 className="text-xl font-semibold text-gray-700 mb-3 flex-shrink-0">
+                  <div className="text-x font-semibold text-gray-700 mb-3 flex-shrink-0">
                     {listName}（{songs.length} 首）
-                  </h3>
+                    <button
+                        onClick={() => handlePlayListSwitch(songs)}
+                        disabled={loading}
+                        className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200 whitespace-nowrap cursor-pointer"
+                    >
+                      播放全部
+                    </button>
+                  </div>
 
                   <div
                       className="overflow-y-auto border border-gray-200 rounded-md flex-grow">

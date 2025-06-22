@@ -19,10 +19,9 @@ interface NeteasePlayerProps {
 const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
   const [error, setError] = useState<string | null>(null);
 
-  const [currentMusicDetail, setCurrentMusicDetail] = useState<Music | null>(
-      null);
+  const [currentMusicDetail, setCurrentMusicDetail] = useState<Music | null>(null);
   const [currentMusicUrl, setCurrentMusicUrl] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null); // 更正这里的 audioRef 引用
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const playListScrollRef = useRef<HTMLDivElement | null>(null);
 
   // --- 播放列表状态 ---
@@ -82,10 +81,9 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
           audioRef.current.play().catch(playError => {
             console.error('音频可能播放失败:', playError);
             if (playError.name === 'AbortError') {
-              setError('播放被用户或浏览器中止，请手动点击播放按钮。');
+              setError('播放可能被浏览器中止，请手动点击播放');
             } else {
-              setError(
-                  '自动播放失败，请手动点击播放按钮。浏览器可能限制了自动播放。');
+              setError('自动播放失败，请手动点击播放。浏览器可能限制了自动播放。');
             }
           });
         }
@@ -198,6 +196,14 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
         }
       }, [callNeteaseApi, playMusic]);
 
+  const handlePlayListSwitch = (newList: Music[]) => {
+    setPlayList(newList);
+    if (newList.length > 0) {
+      setCurrentPlayIndex(0);
+      playMusic(newList[0]);
+    }
+  };
+
   const handlePlayListItemClick = useCallback((music: Music, index: number) => {
     setCurrentPlayIndex(index);
     playMusic(music);
@@ -273,6 +279,7 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
       case 'playlist':
         return <PlaylistDetail id={page.id} isAlbum={page.isAlbum}
                                handlePlayAndAddToList={handlePlayAndAddToList}
+                               handlePlayListSwitch={handlePlayListSwitch}
                                callNeteaseApi={callNeteaseApi} setError={setError}/>
       case 'user':
         return <NeteaseUser openPlaylist={openPlaylist}
@@ -333,12 +340,17 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
                       className="mb-4 flex justify-center lg:justify-start flex-shrink-0">
                     <button
                         onClick={togglePlayMode}
-                        className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition duration-200"
+                        className="px-3 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition duration-200 cursor-pointer"
                     >
                       播放模式: {
                       playMode === PlayMode.Sequence ? '顺序' :
                           playMode === PlayMode.Shuffle ? '随机' : '倒序'
                     }
+                    </button>
+                    <button
+                        onClick={() => handlePlayListSwitch([])}
+                        className="ml-1 px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200 cursor-pointer">
+                      清空
                     </button>
                   </div>
 
@@ -365,7 +377,7 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
                                   e.stopPropagation();
                                   handleRemoveFromPlayList(index);
                                 }}
-                                className="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 hover:text-red-500 hidden cursor-pointer font-semibold group-hover:block"
+                                className="absolute top-1/2 -translate-y-1/2 right-4 text-gray-400 hover:text-red-500 hidden cursor-pointer font-semibold group-hover:block"
                                 title="删除"
                             >
                               ×
@@ -408,7 +420,7 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
                     <button
                         onClick={handlePreviousMusic}
                         className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors
-                             w-10 h-10 flex items-center justify-center"
+                             w-10 h-10 flex items-center justify-center cursor-pointer"
                         title="上一首"
                     >
                       <svg
@@ -433,7 +445,7 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
                     <button
                         onClick={handleNextMusic}
                         className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors
-                             w-10 h-10 flex items-center justify-center"
+                             w-10 h-10 flex items-center justify-center cursor-pointer"
                         title="下一首"
                     >
                       <svg
