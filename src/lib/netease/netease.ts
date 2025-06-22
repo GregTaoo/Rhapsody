@@ -434,7 +434,7 @@ export async function getUserPlaylists(
 ): Promise<ApiResponse> {
   const data = {
     uid,
-    limit: 30,
+    limit: 300000, // TODO 暂时不知道
     offset: 30 * page,
     includeVideo: true,
   };

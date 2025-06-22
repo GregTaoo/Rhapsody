@@ -4,6 +4,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Search} from '@/app/components/search';
 import {Music} from '@/app/components/netease.type';
 import {PlaylistDetail} from '@/app/components/playlistDetail';
+import {NeteaseUser} from '@/app/components/neteaseUser';
 
 // 播放模式枚举
 enum PlayMode {
@@ -218,6 +219,14 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
     });
   }, []);
 
+  const handleRemoveFromPlayList = (index: number) => {
+    setPlayList(prev => {
+      const newList = [...prev];
+      newList.splice(index, 1);
+      return newList;
+    });
+  };
+
   // --- 效果 ---
   // 处理歌曲结束
   useEffect(() => {
@@ -265,13 +274,17 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
         return <PlaylistDetail id={page.id} isAlbum={page.isAlbum}
                                handlePlayAndAddToList={handlePlayAndAddToList}
                                callNeteaseApi={callNeteaseApi} setError={setError}/>
+      case 'user':
+        return <NeteaseUser openPlaylist={openPlaylist}
+                            callNeteaseApi={callNeteaseApi} setError={setError}/>
       default:
         return <></>
     }
   }
 
   const navBar = [
-    { page: { type: 'search' }, text: '搜索' }
+    { page: { type: 'search' }, text: '搜索' },
+    { page: { type: 'user' }, text: '用户' }
   ];
 
   return (
@@ -282,12 +295,11 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
         <div className="flex flex-col lg:flex-row flex-grow overflow-hidden bg-gray-100 p-4 h-screen">
           <div className="flex flex-col flex-grow bg-white rounded-lg shadow-xl mr-2 h-full min-w-0">
             <div className="flex border-b border-gray-300 flex-shrink-0">
-              {navBar.map((tab, index, arr) =>
+              {navBar.map((tab) =>
                 <button key={tab.text} className={`
                   flex-1 text-center py-2 cursor-pointer
                   ${tab.page.type === page.type ? 'border-b-2 border-blue-600 text-blue-600 font-semibold' : 'text-gray-600'}
                   hover:text-blue-600
-                  ${index !== arr.length - 1 ? 'border-r border-gray-300' : ''}
                   focus:outline-none
                 `} onClick={() => setPage(tab.page)}>
                   {tab.text}
@@ -337,26 +349,31 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
                       {playList.map((music, index) => (
                           <li
                               key={music.id + '-' + index}
-                              onClick={() => handlePlayListItemClick(music,
-                                  index)}
-                              className={`p-3 flex items-center transition duration-150 cursor-pointer
-                                  hover:bg-gray-50 ${index ===
-                              currentPlayIndex ?
-                                  'bg-blue-100 font-semibold' :
-                                  ''}`}
+                              className={`group p-3 flex items-center relative transition duration-150 cursor-pointer hover:bg-gray-50 ${index === currentPlayIndex ? 'bg-blue-100 font-semibold' : ''}`}
+                              onClick={() => handlePlayListItemClick(music, index)}
                           >
                             {music.albumPic && (
                                 <img src={music.albumPic} alt="封面"
-                                     className="w-8 h-8 rounded mr-2 object-cover flex-shrink-0"/>
+                                     className="w-8 h-8 rounded mr-2 object-cover flex-shrink-0" />
                             )}
                             <div className="flex-grow min-w-0">
                               <p className="text-sm text-gray-900 truncate">{music.name}</p>
-                              <p className="text-xs text-gray-500 truncate">{music.authors.join(
-                                  ', ')}</p>
+                              <p className="text-xs text-gray-500 truncate">{music.authors.join(', ')}</p>
                             </div>
+                            <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoveFromPlayList(index);
+                                }}
+                                className="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 hover:text-red-500 hidden cursor-pointer font-semibold group-hover:block"
+                                title="删除"
+                            >
+                              ×
+                            </button>
                           </li>
                       ))}
                     </ul>
+
                   </div>
                 </>
             )}

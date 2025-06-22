@@ -1,24 +1,16 @@
+'use client';
+
 import React, {useCallback, useEffect, useState} from 'react';
 import {Music} from '@/app/components/netease.type';
+import {PageSelector} from '@/app/components/pageSelector';
 
 type SearchType = 'music' | 'playlist' | 'album';
 
 export function Search({
   handlePlayAndAddToList, openPlaylist, callNeteaseApi, setError,
 }) {
-  const [searchKeyword, setSearchKeyword] = useState<string>(() => {
-    return localStorage.getItem('searchKeyword') || '';
-  });
-  const [searchType, setSearchType] = useState<SearchType>(() => {
-    return localStorage.getItem('searchType') as SearchType || 'music';
-  });
-
-  useEffect(() => {
-    localStorage.setItem('searchKeyword', searchKeyword);
-  }, [searchKeyword]);
-  useEffect(() => {
-    localStorage.setItem('searchType', searchType);
-  }, [searchType]);
+  const [searchKeyword, setSearchKeyword] = useState<string>(() => window && localStorage.getItem('searchKeyword') || '');
+  const [searchType, setSearchType] = useState<SearchType>(() => window && localStorage.getItem('searchType') as SearchType || 'music');
 
   const [lastSearchedKeyword, setLastSearchedKeyword] = useState<string>('');
   const [musicIdInput, setMusicIdInput] = useState<string>('');
@@ -33,6 +25,7 @@ export function Search({
   const handleSearch = useCallback(
       async (page: number = 0, searchType: SearchType, keywordToSearch: string = searchKeyword) => {
         setSearchType(searchType);
+        localStorage.setItem('searchType', searchType);
 
         if (page === 0) {
           if (!keywordToSearch.trim())
@@ -44,6 +37,8 @@ export function Search({
 
         if (!keywordToSearch.trim())
           return;
+
+        localStorage.setItem('searchKeyword', searchKeyword);
 
         setLoading(true);
         setSearchResults([]);
@@ -197,31 +192,8 @@ export function Search({
             </ul>
           </div>
 
-          {/* 底部分页栏固定 */}
-          {totalPages > 1 && (
-              <div
-                  className="flex justify-center items-center mt-4 space-x-2 flex-shrink-0">
-                <button
-                    onClick={() => handleSearch(currentPage - 1,
-                        lastSearchedKeyword)}
-                    disabled={currentPage === 0 || loading}
-                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50"
-                >
-                  上一页
-                </button>
-                <span className="text-gray-700">
-          第 {currentPage + 1} 页 / 共 {totalPages} 页
-        </span>
-                <button
-                    onClick={() => handleSearch(currentPage + 1,
-                        lastSearchedKeyword)}
-                    disabled={currentPage >= totalPages - 1 || loading}
-                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50"
-                >
-                  下一页
-                </button>
-              </div>
-          )}
+          <PageSelector itemsPerPage={30} totalCount={totalCount} loading={loading}
+                        onFlip={(page) => handleSearch(page, searchType, lastSearchedKeyword)}/>
         </div>
       </div>
   );
