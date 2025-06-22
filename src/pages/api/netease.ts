@@ -101,6 +101,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       case 'getDailyRecommendation':
         apiResponse = await neteaseApi.getDailyRecommendation(currentNeteaseCookies);
         break;
+      case 'getLoginStatus':
+        apiResponse = await neteaseApi.getLoginStatus(currentNeteaseCookies);
+        break;
+      case 'getUserPlaylists':
+        if (!args.uid || typeof args.page === 'undefined') throw new Error('Missing uid or page for getUserPlaylists');
+        apiResponse = await neteaseApi.getUserPlaylists(String(args.uid), Number(args.page), currentNeteaseCookies);
+        break;
       default:
         return res.status(400).json({ message: `Unknown app: ${app}` });
     }

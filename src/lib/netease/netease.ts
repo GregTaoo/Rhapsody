@@ -398,3 +398,64 @@ export async function getDailyRecommendation(
 
   return { data: musics, cookie: updatedCookies };
 }
+
+export async function getLoginStatus(
+    cookie: string[]
+): Promise<ApiResponse> {
+  const accountRes = await post("http://music.163.com/api/w/nuser/account/get", {}, cookie);
+  const accountData = accountRes.data;
+
+  if (!accountData?.account || !accountData?.profile) {
+    return {
+      data: null,
+      cookie: accountRes.cookie,
+    };
+  }
+
+  const uid = accountData.profile.userId;
+  const detailRes = await post(`http://music.163.com/api/v1/user/detail/${uid}`, {}, accountRes.cookie);
+  const profile = detailRes.data?.profile;
+
+  return {
+    data: {
+      uid,
+      nickname: profile?.nickname ?? '',
+      signature: profile?.signature ?? '',
+      avatarUrl: profile?.defaultAvatar ? '' : (profile?.avatarUrl ?? ''),
+    },
+    cookie: detailRes.cookie,
+  };
+}
+
+export async function getUserPlaylists(
+    uid: string,
+    page: number,
+    cookie: string[]
+): Promise<ApiResponse> {
+  const data = {
+    uid,
+    limit: 30,
+    offset: 30 * page,
+    includeVideo: true,
+  };
+
+  const { data: rawData, cookie: updatedCookies } = await postForm("http://music.163.com/api/user/playlist", data, cookie);
+
+  const playlists: any[] = [];
+  const array = rawData?.playlist;
+
+  if (Array.isArray(array)) {
+    array.forEach((playlist: any) => {
+      playlists.push({
+        id: String(playlist.id),
+        name: playlist.name || '',
+        creatorName: playlist.creator?.nickname || '',
+      });
+    });
+  }
+
+  return {
+    data: playlists,
+    cookie: updatedCookies,
+  };
+}
