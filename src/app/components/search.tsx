@@ -3,14 +3,15 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {Music} from '@/app/components/netease.type';
 import {PageSelector} from '@/app/components/pageSelector';
+import {getLocalStorage} from '@/lib/util';
 
 type SearchType = 'music' | 'playlist' | 'album';
 
 export function Search({
   handlePlayAndAddToList, openPlaylist, callNeteaseApi, setError,
 }) {
-  const [searchKeyword, setSearchKeyword] = useState<string>(() => window && localStorage.getItem('searchKeyword') || '');
-  const [searchType, setSearchType] = useState<SearchType>(() => window && localStorage.getItem('searchType') as SearchType || 'music');
+  const [searchKeyword, setSearchKeyword] = useState<string>(() => getLocalStorage('searchKeyword', ''));
+  const [searchType, setSearchType] = useState<SearchType>(() => getLocalStorage('searchType', 'music'));
 
   const [lastSearchedKeyword, setLastSearchedKeyword] = useState<string>('');
   const [musicIdInput, setMusicIdInput] = useState<string>('');

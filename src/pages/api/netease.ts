@@ -40,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // 1. 获取用户 NETEASE_SESSION cookie
   const cookies = parseCookies(req.headers.cookie || '');
-  let neteaseSessionCookie = cookies['NETEASE_SESSION'];
+  const neteaseSessionCookie = cookies['NETEASE_SESSION'];
   let currentNeteaseCookies: string[] = [];
 
   if (neteaseSessionCookie) {
