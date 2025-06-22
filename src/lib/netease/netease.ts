@@ -459,3 +459,14 @@ export async function getUserPlaylists(
     cookie: updatedCookies,
   };
 }
+
+export async function logout(
+    cookie: string[]
+): Promise<ApiResponse> {
+  await get("http://music.163.com/api/user/logout", cookie);
+
+  return {
+    data: 'ok',
+    cookie: [],
+  };
+}

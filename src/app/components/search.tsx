@@ -18,9 +18,7 @@ export function Search({
 
   const [loading, setLoading] = useState(false);
 
-  const [currentPage, setCurrentPage] = useState<number>(0);
   const [totalCount, setTotalCount] = useState<number>(0);
-  const songsPerPage = 30;
 
   const handleSearch = useCallback(
       async (page: number = 0, searchType: SearchType, keywordToSearch: string = searchKeyword) => {
@@ -42,7 +40,6 @@ export function Search({
 
         setLoading(true);
         setSearchResults([]);
-        setCurrentPage(page);
 
         const results = await callNeteaseApi(
             searchType === 'music' ? 'searchMusic'
@@ -74,8 +71,6 @@ export function Search({
       setLastSearchedKeyword(searchKeyword);
     }
   }, []);  // 只执行一次，组件挂载时
-
-  const totalPages = Math.ceil(totalCount / songsPerPage);
 
   const handlePlayDirectly = useCallback(() => {
     if (musicIdInput) {
@@ -149,12 +144,9 @@ export function Search({
         {/* 中间：搜索结果标题 + 可滚动列表 */}
         <div className="flex flex-col flex-grow min-h-0">
           {/* 固定搜索结果标题 */}
-          {searchResults.length > 0 && (
-              <div
-                  className="flex-shrink-0 text-x font-semibold text-gray-700 mb-1">
-                搜索结果 ({totalCount} 项):
-              </div>
-          )}
+          <div className="flex-shrink-0 text-x font-semibold text-gray-700 mb-1">
+            {searchResults.length > 0 ? `搜索结果 (${totalCount} 项)` : `加载中...`}
+          </div>
 
           {/* 可滚动结果列表 */}
           <div

@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { QRCodeCanvas } from 'qrcode.react';
+import React, {useEffect, useState, useRef, useCallback} from 'react';
+import {QRCodeCanvas} from 'qrcode.react';
 
 interface UserProfile {
   uid: string;
@@ -29,7 +29,8 @@ export const NeteaseUser: React.FC<NeteaseUserProps> = ({
                                                         }) => {
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [uniKey, setUniKey] = useState<string>('');
-  const [loginStatus, setLoginStatus] = useState<'expired' | 'waiting' | 'success' | 'unknown' | null>(null);
+  const [loginStatus, setLoginStatus] = useState<'expired' | 'waiting' | 'success' | 'unknown' | null>(
+      null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [userPlaylists, setUserPlaylists] = useState<Playlist[]>([]);
   const intervalRef = useRef<number | null>(null);
@@ -37,7 +38,7 @@ export const NeteaseUser: React.FC<NeteaseUserProps> = ({
   // 拉取用户歌单
   const fetchPlaylists = useCallback(async (uid: string) => {
     try {
-      const res = await callNeteaseApi('getUserPlaylists', { uid, page: 0 });
+      const res = await callNeteaseApi('getUserPlaylists', {uid, page: 0});
       setUserPlaylists(res || []);
     } catch (e) {
       console.error('获取用户歌单失败', e);
@@ -91,7 +92,7 @@ export const NeteaseUser: React.FC<NeteaseUserProps> = ({
 
     const checkStatus = async () => {
       try {
-        const status = await callNeteaseApi('getQRCodeStatus', { uniKey });
+        const status = await callNeteaseApi('getQRCodeStatus', {uniKey});
         setLoginStatus(status);
 
         if (status === 'success') {
@@ -135,15 +136,20 @@ export const NeteaseUser: React.FC<NeteaseUserProps> = ({
     };
   }, [uniKey, callNeteaseApi, fetchQRCode, fetchPlaylists, setError]);
 
+  const handleLogout = async () => {
+    callNeteaseApi('logout');
+    setLoginStatus('expired');
+    await fetchQRCode();
+  };
+
   return (
       <div className="flex flex-col h-full min-h-0 p-4">
-
         {loginStatus !== 'success' && (
-            <>
+            <div className="flex flex-col h-full min-h-0 p-4 items-center justify-center text-center">
               {qrCodeUrl ? (
                   <>
                     <p className="mb-2 text-gray-700">请使用网易云音乐APP扫码登录</p>
-                    <QRCodeCanvas value={qrCodeUrl} size={200} />
+                    <QRCodeCanvas value={qrCodeUrl} size={200}/>
                   </>
               ) : (
                   <p className="text-gray-500">加载中...</p>
@@ -157,7 +163,7 @@ export const NeteaseUser: React.FC<NeteaseUserProps> = ({
               {loginStatus === 'waiting' && (
                   <p className="text-gray-600 mt-2">等待扫码...</p>
               )}
-            </>
+            </div>
         )}
 
         {loginStatus === 'success' && userProfile && (
@@ -174,10 +180,16 @@ export const NeteaseUser: React.FC<NeteaseUserProps> = ({
                   <p className="font-semibold text-lg text-gray-800">{userProfile.nickname}</p>
                   <p className="text-sm text-gray-500">{userProfile.signature}</p>
                 </div>
+                <button
+                    onClick={handleLogout}
+                    className="px-3 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition duration-200 cursor-pointer">
+                  登出
+                </button>
               </div>
 
               <h3 className="text-lg font-semibold mb-2 text-gray-800">您的歌单列表</h3>
-              <div className="flex-grow overflow-auto border border-gray-200 rounded-md">
+              <div
+                  className="flex-grow overflow-auto border border-gray-200 rounded-md">
                 <ul className="divide-y divide-gray-200">
                   {userPlaylists.map((item) => (
                       <li

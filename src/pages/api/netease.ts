@@ -108,6 +108,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!args.uid) throw new Error('Missing uid for getUserPlaylists');
         apiResponse = await neteaseApi.getUserPlaylists(String(args.uid), Number(args.page) ?? 0, currentNeteaseCookies);
         break;
+      case 'logout':
+        apiResponse = await neteaseApi.logout(currentNeteaseCookies);
+        break;
       default:
         return res.status(400).json({ message: `Unknown app: ${app}` });
     }
