@@ -5,6 +5,7 @@ import {Search} from '@/app/components/search';
 import {Music} from '@/app/components/netease.type';
 import {PlaylistDetail} from '@/app/components/playlistDetail';
 import {NeteaseUser} from '@/app/components/neteaseUser';
+import {LyricViewer} from '@/app/components/lyricViewer';
 
 // 播放模式枚举
 enum PlayMode {
@@ -270,6 +271,10 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
     setPage({ type: 'playlist', id, isAlbum })
   }
 
+  const openLyricViewer = () => {
+    setPage({ type: 'lyric' })
+  }
+
   const getPageElement = () => {
     switch (page.type) {
       case 'search':
@@ -283,6 +288,9 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
                                callNeteaseApi={callNeteaseApi} setError={setError}/>
       case 'user':
         return <NeteaseUser openPlaylist={openPlaylist}
+                            callNeteaseApi={callNeteaseApi} setError={setError}/>
+      case 'lyric':
+        return <LyricViewer musicId={currentMusicDetail!.id} audioRef={audioRef}
                             callNeteaseApi={callNeteaseApi} setError={setError}/>
       default:
         return <></>
@@ -399,7 +407,9 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
                 <>
                   {/* 左侧：专辑封面 + 歌曲信息 */}
                   <div
-                      className="flex items-center space-x-3 flex-grow min-w-0 max-w-[40%]">
+                      className="flex items-center space-x-3 flex-grow min-w-0 max-w-[40%] cursor-pointer"
+                      onClick={openLyricViewer}
+                  >
                     {currentMusicDetail.albumPic && (
                         <img
                             src={currentMusicDetail.albumPic}
