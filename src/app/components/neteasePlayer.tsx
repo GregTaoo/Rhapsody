@@ -238,6 +238,13 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
     setPlayList(prev => {
       const newList = [...prev];
       newList.splice(index, 1);
+      if (index < currentPlayIndex) {
+        setCurrentPlayIndex(currentPlayIndex - 1);
+      } else if (index == currentPlayIndex && playList.length > 0) {
+        const index = (currentPlayIndex + 1) % playList.length;
+        setCurrentPlayIndex(index - index === 0 ? 0 : 1);
+        playMusic(playList[index]);
+      }
       return newList;
     });
   };
@@ -282,23 +289,13 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
         if (state.playList && state.playList.length > 0) {
           setPlayList(state.playList);
           setPlayMode(state.playMode || PlayMode.Sequence);
-          setCurrentPlayIndex(state.currentPlayIndex >= 0 ? state.currentPlayIndex : 0);
-
-          // 播放歌曲及恢复进度稍后处理
-          // 先设置 currentPlayIndex 和 playList 后播放
+          const index = state.currentPlayIndex >= 0 ? state.currentPlayIndex : 0;
+          setCurrentPlayIndex(index);
+          playMusic(state.playList[index]);
         }
-      } catch {
-        // ignore json error
-      }
+      } catch {}
     }
   }, []);
-
-  // --- 新增：当 currentPlayIndex 或 playList 改变时播放对应音乐 ---
-  useEffect(() => {
-    if (playList.length > 0 && currentPlayIndex >= 0 && currentPlayIndex < playList.length) {
-      playMusic(playList[currentPlayIndex]);
-    }
-  }, [currentPlayIndex, playList, playMusic]);
 
   // --- 新增：监听播放进度，保存状态 ---
   useEffect(() => {
