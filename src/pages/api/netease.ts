@@ -79,24 +79,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         apiResponse = await neteaseApi.getQRCodeStatus(String(args.uniKey), currentNeteaseCookies);
         break;
       case 'getPlaylist':
-        if (!args.id || !args.level) throw new Error('Missing id or level for getPlaylist');
-        apiResponse = await neteaseApi.getPlaylist(String(args.id), String(args.level), currentNeteaseCookies);
+        if (!args.id) throw new Error('Missing id for getPlaylist');
+        apiResponse = await neteaseApi.getPlaylist(String(args.id), currentNeteaseCookies);
         break;
       case 'getAlbum':
-        if (!args.id || !args.level) throw new Error('Missing id or level for getAlbum');
-        apiResponse = await neteaseApi.getAlbum(String(args.id), String(args.level), currentNeteaseCookies);
+        if (!args.id) throw new Error('Missing id for getAlbum');
+        apiResponse = await neteaseApi.getAlbum(String(args.id), currentNeteaseCookies);
         break;
       case 'searchMusic':
-        if (!args.keyword || typeof args.page === 'undefined') throw new Error('Missing keyword or page for searchMusic');
-        apiResponse = await neteaseApi.searchMusic(String(args.keyword), Number(args.page), currentNeteaseCookies);
+        if (!args.keyword) throw new Error('Missing keyword for searchMusic');
+        apiResponse = await neteaseApi.searchMusic(String(args.keyword), Number(args.page) ?? 0, currentNeteaseCookies);
         break;
       case 'searchPlaylist':
-        if (!args.keyword || typeof args.page === 'undefined') throw new Error('Missing keyword or page for searchPlaylist');
-        apiResponse = await neteaseApi.searchPlaylist(String(args.keyword), Number(args.page), currentNeteaseCookies);
+        if (!args.keyword) throw new Error('Missing keyword for searchPlaylist');
+        apiResponse = await neteaseApi.searchPlaylist(String(args.keyword), Number(args.page) ?? 0, currentNeteaseCookies);
         break;
       case 'searchAlbum':
-        if (!args.keyword || typeof args.page === 'undefined') throw new Error('Missing keyword or page for searchAlbum');
-        apiResponse = await neteaseApi.searchAlbum(String(args.keyword), Number(args.page), currentNeteaseCookies);
+        if (!args.keyword) throw new Error('Missing keyword for searchAlbum');
+        apiResponse = await neteaseApi.searchAlbum(String(args.keyword), Number(args.page) ?? 0, currentNeteaseCookies);
         break;
       case 'getDailyRecommendation':
         apiResponse = await neteaseApi.getDailyRecommendation(currentNeteaseCookies);
@@ -105,8 +105,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         apiResponse = await neteaseApi.getLoginStatus(currentNeteaseCookies);
         break;
       case 'getUserPlaylists':
-        if (!args.uid || typeof args.page === 'undefined') throw new Error('Missing uid or page for getUserPlaylists');
-        apiResponse = await neteaseApi.getUserPlaylists(String(args.uid), Number(args.page), currentNeteaseCookies);
+        if (!args.uid) throw new Error('Missing uid for getUserPlaylists');
+        apiResponse = await neteaseApi.getUserPlaylists(String(args.uid), Number(args.page) ?? 0, currentNeteaseCookies);
         break;
       default:
         return res.status(400).json({ message: `Unknown app: ${app}` });

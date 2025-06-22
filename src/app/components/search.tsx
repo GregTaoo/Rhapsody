@@ -2,10 +2,8 @@ import React, {useCallback, useState} from 'react';
 import {Music} from '@/app/components/netease.type';
 
 export function Search({
-                         handlePlayAndAddToList,
-                         callNeteaseApi,
-                         setError,
-                       }) {
+  handlePlayAndAddToList, openPlaylist, callNeteaseApi, setError,
+}) {
   const [musicIdInput, setMusicIdInput] = useState<string>('');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [lastSearchedKeyword, setLastSearchedKeyword] = useState<string>('');
@@ -151,9 +149,10 @@ export function Search({
                   <li
                       key={item.id}
                       onClick={() => {
-                        if (searchType === 'music') handlePlayAndAddToList(
-                            item.id, true);
-                        else setError('点击后功能未实现');
+                        if (searchType === 'music')
+                          handlePlayAndAddToList(item.id, true);
+                        else
+                          openPlaylist(item.id, searchType === 'album');
                       }}
                       className="p-3 flex items-center transition duration-150 hover:bg-gray-50 cursor-pointer"
                   >

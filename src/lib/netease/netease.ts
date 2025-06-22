@@ -210,7 +210,6 @@ export async function getQRCodeStatus(
 
 export async function getPlaylist(
     id: string,
-    level: string,
     cookie: string[]
 ): Promise<ApiResponse> {
   const url = `http://music.163.com/api/v6/playlist/detail?id=${id}&n=10000`;
@@ -244,7 +243,6 @@ export async function getPlaylist(
 
 export async function getAlbum(
     id: string,
-    level: string,
     cookie: string[]
 ): Promise<ApiResponse> {
   const url = `http://music.163.com/api/v1/album/${id}`;

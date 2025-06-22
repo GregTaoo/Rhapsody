@@ -25,8 +25,8 @@ export const PlaylistDetail: React.FC<PlaylistDetailProps> = ({
     const fetchData = async () => {
       setLoading(true);
       try {
-        const data = await callNeteaseApi(
-            isAlbum ? 'getAlbumDetail' : 'getPlaylistDetail', {id});
+        const data = await callNeteaseApi(isAlbum ? 'getAlbum' : 'getPlaylist',
+            {id});
 
         if (!data) throw new Error('返回数据为空');
         const songList = data.songs || [];
@@ -45,7 +45,7 @@ export const PlaylistDetail: React.FC<PlaylistDetailProps> = ({
   }, [id, isAlbum, callNeteaseApi, setError]);
 
   return (
-      <div className="flex flex-col flex-grow min-h-0">
+      <div className="flex flex-col h-full min-h-0">
         {loading ? (
             <p className="text-gray-500 text-center">正在加载{isAlbum ?
                 '专辑' :

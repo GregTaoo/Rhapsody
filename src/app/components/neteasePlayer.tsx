@@ -3,6 +3,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Search} from '@/app/components/search';
 import {Music} from '@/app/components/netease.type';
+import {PlaylistDetail} from '@/app/components/playlistDetail';
 
 // 播放模式枚举
 enum PlayMode {
@@ -250,6 +251,25 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
 
   const [page, setPage] = useState<any>({ type: 'search' });
 
+  const openPlaylist = (id: string, isAlbum: boolean) => {
+    setPage({ type: 'playlist', id, isAlbum })
+  }
+
+  const getPageElement = () => {
+    switch (page.type) {
+      case 'search':
+        return <Search handlePlayAndAddToList={handlePlayAndAddToList}
+                       callNeteaseApi={callNeteaseApi}
+                       openPlaylist={openPlaylist} setError={setError}/>
+      case 'playlist':
+        return <PlaylistDetail id={page.id} isAlbum={page.isAlbum}
+                               handlePlayAndAddToList={handlePlayAndAddToList}
+                               callNeteaseApi={callNeteaseApi} setError={setError}/>
+      default:
+        return <></>
+    }
+  }
+
   const navBar = [
     { page: { type: 'search' }, text: '搜索' }
   ];
@@ -264,23 +284,18 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
             <div className="flex border-b border-gray-300 flex-shrink-0">
               {navBar.map((tab, index, arr) =>
                 <button key={tab.text} className={`
-                  flex-1 text-center py-2
+                  flex-1 text-center py-2 cursor-pointer
                   ${tab.page.type === page.type ? 'border-b-2 border-blue-600 text-blue-600 font-semibold' : 'text-gray-600'}
                   hover:text-blue-600
                   ${index !== arr.length - 1 ? 'border-r border-gray-300' : ''}
                   focus:outline-none
-                `}>
+                `} onClick={() => setPage(tab.page)}>
                   {tab.text}
                 </button>
               )}
             </div>
             <div className="p-5 flex-grow min-h-0">
-              {
-                page.type === 'search' ?
-                  <Search handlePlayAndAddToList={handlePlayAndAddToList}
-                          callNeteaseApi={callNeteaseApi} setError={setError}>
-                  </Search> : <></>
-              }
+              {getPageElement()}
             </div>
           </div>
 
