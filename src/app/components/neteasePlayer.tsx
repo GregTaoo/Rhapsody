@@ -14,6 +14,14 @@ enum PlayMode {
   Reverse = 'reverse',   // 倒序播放
 }
 
+const STORAGE_KEY = 'PLAYER_DATA';
+
+interface SavedState {
+  playList: Music[];
+  currentPlayIndex: number;
+  playMode: PlayMode;
+}
+
 interface NeteasePlayerProps {
 }
 
@@ -264,6 +272,72 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
       }
     }
   }, [currentPlayIndex, playList]);
+
+  // --- 新增：恢复播放器状态 ---
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const state: SavedState = JSON.parse(saved);
+        if (state.playList && state.playList.length > 0) {
+          setPlayList(state.playList);
+          setPlayMode(state.playMode || PlayMode.Sequence);
+          setCurrentPlayIndex(state.currentPlayIndex >= 0 ? state.currentPlayIndex : 0);
+
+          // 播放歌曲及恢复进度稍后处理
+          // 先设置 currentPlayIndex 和 playList 后播放
+        }
+      } catch {
+        // ignore json error
+      }
+    }
+  }, []);
+
+  // --- 新增：当 currentPlayIndex 或 playList 改变时播放对应音乐 ---
+  useEffect(() => {
+    if (playList.length > 0 && currentPlayIndex >= 0 && currentPlayIndex < playList.length) {
+      playMusic(playList[currentPlayIndex]);
+    }
+  }, [currentPlayIndex, playList, playMusic]);
+
+  // --- 新增：监听播放进度，保存状态 ---
+  useEffect(() => {
+    if (!audioRef.current) return;
+    const audio = audioRef.current;
+
+    const saveState = () => {
+      const state: SavedState = {
+        playList,
+        currentPlayIndex,
+        playMode
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch {
+        // ignore quota exceeded or other errors
+      }
+    };
+
+    audio.addEventListener('timeupdate', saveState);
+
+    // 额外监听播放列表、播放索引、播放模式变化时也保存状态
+    // 这里用 useEffect 监听 playList、currentPlayIndex、playMode 变化时保存状态
+    return () => {
+      audio.removeEventListener('timeupdate', saveState);
+    };
+  }, [playList, currentPlayIndex, playMode]);
+
+  // 监听 playList, currentPlayIndex, playMode 变化保存状态
+  useEffect(() => {
+    try {
+      const state: SavedState = {
+        playList,
+        currentPlayIndex,
+        playMode
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {}
+  }, [playList, currentPlayIndex, playMode]);
 
   const [page, setPage] = useState<any>({ type: 'search' });
 
