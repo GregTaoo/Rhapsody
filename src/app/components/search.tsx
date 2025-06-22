@@ -1,15 +1,28 @@
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {Music} from '@/app/components/netease.type';
+
+type SearchType = 'music' | 'playlist' | 'album';
 
 export function Search({
   handlePlayAndAddToList, openPlaylist, callNeteaseApi, setError,
 }) {
-  const [musicIdInput, setMusicIdInput] = useState<string>('');
-  const [searchKeyword, setSearchKeyword] = useState<string>('');
+  const [searchKeyword, setSearchKeyword] = useState<string>(() => {
+    return localStorage.getItem('searchKeyword') || '';
+  });
+  const [searchType, setSearchType] = useState<SearchType>(() => {
+    return localStorage.getItem('searchType') as SearchType || 'music';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('searchKeyword', searchKeyword);
+  }, [searchKeyword]);
+  useEffect(() => {
+    localStorage.setItem('searchType', searchType);
+  }, [searchType]);
+
   const [lastSearchedKeyword, setLastSearchedKeyword] = useState<string>('');
+  const [musicIdInput, setMusicIdInput] = useState<string>('');
   const [searchResults, setSearchResults] = useState<Music[]>([]);
-  const [searchType, setSearchType] = useState<'music' | 'playlist' | 'album'>(
-      'music');
 
   const [loading, setLoading] = useState(false);
 
@@ -18,21 +31,19 @@ export function Search({
   const songsPerPage = 30;
 
   const handleSearch = useCallback(
-      async (page: number = 0, keywordToSearch: string = searchKeyword) => {
+      async (page: number = 0, searchType: SearchType, keywordToSearch: string = searchKeyword) => {
+        setSearchType(searchType);
+
         if (page === 0) {
-          if (!keywordToSearch.trim()) {
-            setError('请输入搜索关键词');
+          if (!keywordToSearch.trim())
             return;
-          }
           setLastSearchedKeyword(keywordToSearch);
         } else {
           keywordToSearch = lastSearchedKeyword;
         }
 
-        if (!keywordToSearch.trim()) {
-          setError('搜索关键词为空，请重新输入');
+        if (!keywordToSearch.trim())
           return;
-        }
 
         setLoading(true);
         setSearchResults([]);
@@ -61,6 +72,13 @@ export function Search({
       },
       [callNeteaseApi, lastSearchedKeyword, searchKeyword, searchType],
   );
+
+  useEffect(() => {
+    if (searchKeyword.trim()) {
+      handleSearch(0, searchType, searchKeyword);
+      setLastSearchedKeyword(searchKeyword);
+    }
+  }, []);  // 只执行一次，组件挂载时
 
   const totalPages = Math.ceil(totalCount / songsPerPage);
 
@@ -103,7 +121,9 @@ export function Search({
             <div className="flex flex-wrap items-center gap-2">
               <select
                   value={searchType}
-                  onChange={(e) => setSearchType(e.target.value as any)}
+                  onChange={(e) => {
+                    handleSearch(0, e.target.value as SearchType, searchKeyword);
+                  }}
                   className="p-2 border border-gray-300 rounded-md text-gray-800 bg-white"
               >
                 <option value="music">歌曲</option>
@@ -116,12 +136,12 @@ export function Search({
                   onChange={(e) => setSearchKeyword(e.target.value)}
                   placeholder="输入关键词"
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSearch(0, searchKeyword);
+                    if (e.key === 'Enter') handleSearch(0, searchType, searchKeyword);
                   }}
                   className="flex-1 min-w-0 p-2 border border-gray-300 rounded-md outline-none focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
               />
               <button
-                  onClick={() => handleSearch(0, searchKeyword)}
+                  onClick={() => handleSearch(0, searchType, searchKeyword)}
                   disabled={loading}
                   className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 whitespace-nowrap"
               >
