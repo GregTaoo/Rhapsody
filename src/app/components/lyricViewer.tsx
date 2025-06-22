@@ -14,36 +14,63 @@ interface LyricLine {
   text: string;
 }
 
-/**
- * Parses a raw LRC string into an array of LyricLine objects.
- * Each object contains the time (in seconds) and the lyric text.
- * @param raw - The raw LRC string.
- * @returns An array of LyricLine objects, sorted by time.
- */
 function parseLRC(raw: string): LyricLine[] {
-  const lines = raw.split('\n');
+  // 支持 \n、\r\n、\r 换行符
+  const lines = raw.split(/\r?\n|\r|\\n|\\r|\\r\\n/);
   const result: LyricLine[] = [];
-  // Regex to match [mm:ss.SS] or [mm:ss.SSS] time tags
-  const timeRegex = /\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?]/;
 
-  for (let line of lines) {
-    const match = timeRegex.exec(line);
-    if (match) {
-      const [, min, sec, milli = '0'] = match;
-      // Calculate time in seconds
-      const time =
-          parseInt(min) * 60 +
-          parseInt(sec) +
-          parseInt(milli) / (milli.length === 3 ? 1000 : 100); // Handle 2 or 3 digit milliseconds
-      const text = line.replace(timeRegex, '').trim(); // Remove time tag and trim whitespace
-      if (text) { // Only add lines with actual text
-        result.push({ time, text });
+  // 匹配时间标签，形如 [mm:ss.xx] 或 [mm:ss.xxx]
+  // 注意这里用全局匹配，方便找到一行内所有时间标签
+  const timeTagRegex = /\[(\d{1,2}):(\d{2})(?:[.:](\d{1,3}))?]/g;
+
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+    if (!trimmedLine) continue;
+
+    // 过滤注释行，假设注释以 // 开头
+    if (trimmedLine.startsWith('//')) continue;
+
+    // 提取所有时间标签
+    const timeTags = [...trimmedLine.matchAll(timeTagRegex)];
+    if (timeTags.length === 0) continue;
+
+    // 取歌词文本部分，歌词是时间标签后的部分
+    // 因为一行可能有多个时间标签，歌词文本是最后一个时间标签后的内容
+    const lastTag = timeTags[timeTags.length - 1];
+    const text = trimmedLine.slice(lastTag.index! + lastTag[0].length).trim();
+
+    if (!text) continue;
+
+    for (const tag of timeTags) {
+      const min = parseInt(tag[1], 10);
+      const sec = parseInt(tag[2], 10);
+      const milliStr = tag[3] || '0';
+
+      // 计算毫秒精度，位数不同处理不同
+      // 例如 .5 表示 500ms, .50 表示 500ms, .500 表示 500ms
+      let milli = 0;
+      if (milliStr.length === 1) {
+        milli = parseInt(milliStr) * 100;
+      } else if (milliStr.length === 2) {
+        milli = parseInt(milliStr) * 10;
+      } else {
+        milli = parseInt(milliStr);
+      }
+
+      const time = min * 60 + sec + milli / 1000;
+
+      // 如果歌词里含有内嵌时间标签等，可以根据需要再清理，这里简单过滤掉 []
+      const cleanText = text.replace(/\[.*?]/g, '').trim();
+
+      if (cleanText && !cleanText.startsWith('//')) {
+        result.push({ time, text: cleanText });
       }
     }
   }
 
-  // Sort lyrics by time to ensure correct order
-  return result.sort((a, b) => a.time - b.time);
+  // 按时间排序
+  result.sort((a, b) => a.time - b.time);
+  return result;
 }
 
 /**
@@ -195,19 +222,19 @@ export const LyricViewer: React.FC<LyricViewerProps> = ({
         // Symmetrical fading and sizing for lines around the current one
     // Lines directly adjacent to current
     else if (absOffset === 1) {
-      return 'text-gray-700 text-2xl opacity-40 transition-all duration-300';
+      return 'text-gray-700 text-2xl opacity-50 transition-all duration-300';
     }
     // Lines two steps away
     else if (absOffset === 2) {
-      return 'text-gray-500 text-xl opacity-40 transition-all duration-300';
+      return 'text-gray-500 text-xl opacity-45 transition-all duration-300';
     }
     // Lines three steps away
     else if (absOffset === 3) {
-      return 'text-gray-400 text-lg opacity-30 transition-all duration-300';
+      return 'text-gray-400 text-lg opacity-45 transition-all duration-300';
     }
     // Lines further away (more faded and smaller)
     else {
-      return 'text-gray-300 text-base opacity-20 transition-all duration-300';
+      return 'text-gray-400 text-base opacity-40 transition-all duration-300';
     }
   };
 
@@ -222,13 +249,13 @@ export const LyricViewer: React.FC<LyricViewerProps> = ({
     if (offset === 0) {
       return 'text-gray-600 text-xl opacity-90 transition-all duration-300'; // Adjusted for better visibility
     } else if (absOffset === 1) {
-      return 'text-gray-500 text-lg opacity-70 transition-all duration-300';
+      return 'text-gray-500 text-lg opacity-80 transition-all duration-300';
     } else if (absOffset === 2) {
-      return 'text-gray-400 text-base opacity-50 transition-all duration-300';
+      return 'text-gray-400 text-base opacity-80 transition-all duration-300';
     } else if (absOffset === 3) {
-      return 'text-gray-300 text-sm opacity-40 transition-all duration-300';
+      return 'text-gray-400 text-sm opacity-80 transition-all duration-300';
     } else {
-      return 'text-gray-200 text-xs opacity-20 transition-all duration-300';
+      return 'text-gray-400 text-xs opacity-80 transition-all duration-300';
     }
   };
 
