@@ -71,7 +71,7 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
 
     try {
       const linkData: string = await callNeteaseApi('getMusicLink',
-          {id: music.id, level: 'standard'});
+          {id: music.id, level: 'lossless'});
       if (linkData) {
         setCurrentMusicUrl(linkData);
         if (audioRef.current) {
@@ -248,16 +248,40 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
     }
   }, [currentPlayIndex, playList]);
 
+  const [page, setPage] = useState<any>({ type: 'search' });
+
+  const navBar = [
+    { page: { type: 'search' }, text: '搜索' }
+  ];
+
   return (
       // 外层容器使用 h-screen 确保铺满视口高度，并使用 flex-col 垂直布局
       <div className="flex flex-col h-screen bg-gray-100 font-inter">
         {/* 主内容区域：搜索和播放列表 */}
         {/* flex-grow 占据剩余垂直空间，p-4 作为整体内边距，overflow-hidden 防止内部内容溢出 */}
-        <div
-            className="flex flex-col lg:flex-row flex-grow overflow-hidden bg-gray-100 p-4">
-          <div className="flex flex-col flex-grow p-5 bg-white rounded-lg shadow-xl mr-2 h-full">
-            <Search handlePlayAndAddToList={handlePlayAndAddToList}
-                    callNeteaseApi={callNeteaseApi} setError={setError}></Search>
+        <div className="flex flex-col lg:flex-row flex-grow overflow-hidden bg-gray-100 p-4 h-screen">
+          <div className="flex flex-col flex-grow bg-white rounded-lg shadow-xl mr-2 h-full min-w-0">
+            <div className="flex border-b border-gray-300 flex-shrink-0">
+              {navBar.map((tab, index, arr) =>
+                <button key={tab.text} className={`
+                  flex-1 text-center py-2
+                  ${tab.page.type === page.type ? 'border-b-2 border-blue-600 text-blue-600 font-semibold' : 'text-gray-600'}
+                  hover:text-blue-600
+                  ${index !== arr.length - 1 ? 'border-r border-gray-300' : ''}
+                  focus:outline-none
+                `}>
+                  {tab.text}
+                </button>
+              )}
+            </div>
+            <div className="p-5 flex-grow min-h-0">
+              {
+                page.type === 'search' ?
+                  <Search handlePlayAndAddToList={handlePlayAndAddToList}
+                          callNeteaseApi={callNeteaseApi} setError={setError}>
+                  </Search> : <></>
+              }
+            </div>
           </div>
 
           {/* 分隔线 */}
@@ -265,9 +289,7 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
 
           {/* 播放列表区域 */}
           {/* 移除了 flex-grow，并添加了 lg:w-96 来固定大屏幕下的宽度 */}
-          <div
-              className="flex flex-col p-5 bg-white rounded-lg shadow-xl ml-2 h-full w-full lg:w-96">
-
+          <div className="flex flex-col p-5 bg-white rounded-lg shadow-xl ml-2 h-full w-full lg:w-96 min-w-0">
             {/* 错误信息 */}
             {error &&
                 <p className="text-red-600 mb-4 flex-shrink-0">{error}</p>}
