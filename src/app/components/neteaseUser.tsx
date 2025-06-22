@@ -33,7 +33,7 @@ export const NeteaseUser: React.FC<NeteaseUserProps> = ({
       null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [userPlaylists, setUserPlaylists] = useState<Playlist[]>([]);
-  const intervalRef = useRef<number | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 拉取用户歌单
   const fetchPlaylists = useCallback(async (uid: string) => {
