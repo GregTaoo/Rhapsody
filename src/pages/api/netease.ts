@@ -91,11 +91,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         apiResponse = await neteaseApi.searchMusic(String(args.keyword), Number(args.page), currentNeteaseCookies);
         break;
       case 'searchPlaylist':
-        if (!args.keyword || typeof args.page === 'undefined' || !args.level) throw new Error('Missing keyword, page or level for searchPlaylist');
+        if (!args.keyword || typeof args.page === 'undefined') throw new Error('Missing keyword or page for searchPlaylist');
         apiResponse = await neteaseApi.searchPlaylist(String(args.keyword), Number(args.page), currentNeteaseCookies);
         break;
       case 'searchAlbum':
-        if (!args.keyword || typeof args.page === 'undefined' || !args.level) throw new Error('Missing keyword, page or level for searchAlbum');
+        if (!args.keyword || typeof args.page === 'undefined') throw new Error('Missing keyword or page for searchAlbum');
         apiResponse = await neteaseApi.searchAlbum(String(args.keyword), Number(args.page), currentNeteaseCookies);
         break;
       case 'getDailyRecommendation':
@@ -131,7 +131,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // 返回 API 响应的数据部分
-    return res.status(200).json(apiResponse.data);
+    return res.status(200).json({ success: true, data: apiResponse.data });
 
   } catch (error: any) {
     console.error(`Error calling Netease API for app ${app}:`, error);

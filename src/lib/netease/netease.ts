@@ -337,6 +337,7 @@ export async function searchPlaylist(
 
   const playlists: any[] = [];
   const playlistsArray = rawData?.result?.playlists;
+  const playlistCount = rawData?.result?.playlistCount;
 
   if (Array.isArray(playlistsArray)) {
     playlistsArray.forEach((playlist: any) => {
@@ -348,7 +349,7 @@ export async function searchPlaylist(
     });
   }
 
-  return { data: playlists, cookie: updatedCookies };
+  return { data: { playlists, playlistCount }, cookie: updatedCookies };
 }
 
 export async function searchAlbum(
@@ -360,6 +361,7 @@ export async function searchAlbum(
 
   const albums: any[] = [];
   const albumsArray = rawData?.result?.albums;
+  const albumCount = rawData?.result?.albumCount;
 
   if (Array.isArray(albumsArray)) {
     albumsArray.forEach((album: any) => {
@@ -372,7 +374,7 @@ export async function searchAlbum(
     });
   }
 
-  return { data: albums, cookie: updatedCookies };
+  return { data: { albums, albumCount }, cookie: updatedCookies };
 }
 
 export async function getDailyRecommendation(

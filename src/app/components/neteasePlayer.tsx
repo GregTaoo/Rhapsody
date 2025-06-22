@@ -2,15 +2,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Search} from '@/app/components/search';
-
-// --- 类型定义 ---
-export interface Music {
-  id: string;
-  name: string;
-  duration: number; // 毫秒
-  authors: string[];
-  albumPic: string;
-}
+import {Music} from '@/app/components/netease.type';
 
 // 播放模式枚举
 enum PlayMode {
@@ -53,13 +45,13 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
             }),
           });
 
-          if (!response.ok) {
-            const errorData = await response.json();
-            setError(errorData.message || `API 调用 ${appName} 失败。`);
+          const json = await response.json();
+          if (!response.ok || !json.success) {
+            setError(json.data || `API 调用 ${appName} 失败。`);
             return null;
           }
 
-          return await response.json();
+          return json.data
         } catch (err: any) {
           console.error(`调用 ${appName} 时出错:`, err);
           setError(err.message || '发生未知错误。');
@@ -263,10 +255,10 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
         {/* flex-grow 占据剩余垂直空间，p-4 作为整体内边距，overflow-hidden 防止内部内容溢出 */}
         <div
             className="flex flex-col lg:flex-row flex-grow overflow-hidden bg-gray-100 p-4">
-          {/* 搜索面板 */}
-          {/* flex-grow 确保其占据 flex-grow 父容器的剩余宽度，h-full 确保其占据 flex-grow 父容器的全部高度 */}
-          <Search handlePlayAndAddToList={handlePlayAndAddToList}
-                  callNeteaseApi={callNeteaseApi} setError={setError}></Search>
+          <div className="flex flex-col flex-grow p-5 bg-white rounded-lg shadow-xl mr-2 h-full">
+            <Search handlePlayAndAddToList={handlePlayAndAddToList}
+                    callNeteaseApi={callNeteaseApi} setError={setError}></Search>
+          </div>
 
           {/* 分隔线 */}
           <div className="flex-shrink-0 w-px bg-gray-300 hidden lg:block"></div>
