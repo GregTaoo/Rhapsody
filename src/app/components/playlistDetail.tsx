@@ -7,6 +7,7 @@ interface PlaylistDetailProps {
   id: string;
   isAlbum: boolean;
   handlePlayAndAddToList: (id: string, isFromSearch?: boolean) => void;
+  handlePlayListSwitch: (newList: Music[]) => void;
   callNeteaseApi: (
       appName: string, params?: Record<string, any>) => Promise<any>;
   setError: (message: string) => void;
