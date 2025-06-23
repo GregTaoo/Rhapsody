@@ -17,7 +17,7 @@ interface Playlist {
 }
 
 interface NeteaseUserProps {
-  openPlaylist: (id: string, isAlbum: boolean) => void;
+  openPlaylist: (id: string | undefined, isAlbum: boolean, data: any) => void;
   callNeteaseApi: (apiName: string, args?: any) => Promise<any>;
   setError: (msg: string) => void;
 }
@@ -142,6 +142,11 @@ export const NeteaseUser: React.FC<NeteaseUserProps> = ({
     await fetchQRCode();
   };
 
+  const handleFetchDailyRecommend = async () => {
+    const data = await callNeteaseApi('getDailyRecommendation');
+    openPlaylist(undefined, false, { songs: data, name: '网易云日推' })
+  };
+
   return (
       <div className="flex flex-col h-full min-h-0 p-4">
         {loginStatus !== 'success' && (
@@ -185,6 +190,11 @@ export const NeteaseUser: React.FC<NeteaseUserProps> = ({
                     className="px-3 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition duration-200 cursor-pointer">
                   登出
                 </button>
+                <button
+                    onClick={handleFetchDailyRecommend}
+                    className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-200 cursor-pointer">
+                  日推
+                </button>
               </div>
 
               <h3 className="text-lg font-semibold mb-2 text-gray-800">您的歌单列表</h3>
@@ -194,7 +204,7 @@ export const NeteaseUser: React.FC<NeteaseUserProps> = ({
                   {userPlaylists.map((item) => (
                       <li
                           key={item.id}
-                          onClick={() => openPlaylist(item.id, false)}
+                          onClick={() => openPlaylist(item.id, false, undefined)}
                           className="p-3 flex items-center transition duration-150 hover:bg-gray-50 cursor-pointer"
                       >
                         <div className="flex-grow min-w-0">

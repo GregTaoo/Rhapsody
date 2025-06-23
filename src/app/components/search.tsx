@@ -86,7 +86,7 @@ export function Search({
       <div className="flex flex-col h-full min-h-0">
         {/* 上方：按ID播放 + 搜索输入 */}
         <div
-            className="flex flex-col md:grid md:grid-cols-2 gap-4 mb-6 pb-4 border-b border-gray-200 flex-shrink-0">
+            className="flex flex-col lg:grid lg:grid-cols-2 gap-4 mb-6 pb-4 border-b border-gray-200 flex-shrink-0">
           {/* 按 ID 播放 */}
           <div className="flex flex-col">
             <div className="flex flex-wrap items-center gap-2">

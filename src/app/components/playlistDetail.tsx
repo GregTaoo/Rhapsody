@@ -6,6 +6,7 @@ import {Music} from '@/app/components/netease.type';
 interface PlaylistDetailProps {
   id: string;
   isAlbum: boolean;
+  data: { songs: any, name: string } | undefined;
   handlePlayAndAddToList: (id: string, isFromSearch?: boolean) => void;
   handlePlayListSwitch: (newList: Music[]) => void;
   callNeteaseApi: (
@@ -14,7 +15,7 @@ interface PlaylistDetailProps {
 }
 
 export const PlaylistDetail: React.FC<PlaylistDetailProps> = ({
-  id, isAlbum, handlePlayAndAddToList, handlePlayListSwitch, callNeteaseApi, setError
+  id, isAlbum, data = undefined, handlePlayAndAddToList, handlePlayListSwitch, callNeteaseApi, setError
 }) => {
   const [songs, setSongs] = useState<Music[]>([]);
   const [listName, setListName] = useState<string>('');
@@ -40,7 +41,14 @@ export const PlaylistDetail: React.FC<PlaylistDetailProps> = ({
       }
     };
 
-    fetchData();
+    if (id || !data) {
+      fetchData();
+    } else {
+      setLoading(true);
+      setListName(data.name || (isAlbum ? '专辑' : '歌单'));
+      setSongs(data.songs || []);
+      setLoading(false);
+    }
   }, [id, isAlbum, callNeteaseApi, setError]);
 
   return (

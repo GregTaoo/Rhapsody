@@ -6,6 +6,7 @@ import {Music} from '@/app/components/netease.type';
 import {PlaylistDetail} from '@/app/components/playlistDetail';
 import {NeteaseUser} from '@/app/components/neteaseUser';
 import {LyricViewer} from '@/app/components/lyricViewer';
+import {useWidthFit} from "@/app/components/hook/useWidthFit";
 
 // 播放模式枚举
 enum PlayMode {
@@ -336,10 +337,82 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
     } catch {}
   }, [playList, currentPlayIndex, playMode]);
 
+  const sidebarTooNarrow = useWidthFit();
+
   const [page, setPage] = useState<any>({ type: 'search' });
 
-  const openPlaylist = (id: string, isAlbum: boolean) => {
-    setPage({ type: 'playlist', id, isAlbum })
+  const getCurrentPlaylistElement = () => (
+      <div className="flex flex-col h-full">
+        {/* 错误信息 */}
+        {error &&
+            <p className="text-red-600 mb-4 flex-shrink-0">{error}</p>}
+
+        <h3 className="text-xl font-bold text-gray-800 mb-4 text-center lg:text-left">当前播放列表
+          ({playList.length} 首)</h3>
+
+        {playList.length === 0 ? (
+            <p className="text-gray-500 text-center lg:text-left">播放列表为空，快去搜索或添加音乐吧！</p>
+        ) : (
+            <>
+              {/* 播放模式切换按钮 */}
+              <div
+                  className="mb-4 flex justify-center lg:justify-start flex-shrink-0">
+                <button
+                    onClick={togglePlayMode}
+                    className="px-3 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition duration-200 cursor-pointer"
+                >
+                  播放模式: {
+                  playMode === PlayMode.Sequence ? '顺序' :
+                      playMode === PlayMode.Shuffle ? '随机' : '倒序'
+                }
+                </button>
+                <button
+                    onClick={() => handlePlayListSwitch([])}
+                    className="ml-1 px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200 cursor-pointer">
+                  清空
+                </button>
+              </div>
+
+              {/* 播放列表 - 此 div 将可滚动 */}
+              <div ref={playListScrollRef}
+                   className="border border-gray-200 rounded-md flex-grow overflow-y-auto">
+                <ul className="divide-y divide-gray-200">
+                  {playList.map((music, index) => (
+                      <li
+                          key={music.id + '-' + index}
+                          className={`group p-3 flex items-center relative transition duration-150 cursor-pointer hover:bg-gray-50 ${index === currentPlayIndex ? 'bg-blue-100 font-semibold' : ''}`}
+                          onClick={() => handlePlayListItemClick(music, index)}
+                      >
+                        {music.albumPic && (
+                            <img src={music.albumPic} alt="封面"
+                                 className="w-8 h-8 rounded mr-2 object-cover flex-shrink-0"/>
+                        )}
+                        <div className="flex-grow min-w-0">
+                          <p className="text-sm text-gray-900 truncate">{music.name}</p>
+                          <p className="text-xs text-gray-500 truncate">{music.authors.join(', ')}</p>
+                        </div>
+                        <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveFromPlayList(index);
+                            }}
+                            className="absolute top-1/2 -translate-y-1/2 right-4 text-gray-400 hover:text-red-500 hidden cursor-pointer font-semibold group-hover:block"
+                            title="删除"
+                        >
+                          ×
+                        </button>
+                      </li>
+                  ))}
+                </ul>
+
+              </div>
+            </>
+        )}
+      </div>
+  );
+
+  const openPlaylist = (id: string | undefined, isAlbum: boolean, data: any = undefined) => {
+    setPage({ type: 'playlist', id, isAlbum, data })
   }
 
   const openLyricViewer = () => {
@@ -353,7 +426,7 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
                        callNeteaseApi={callNeteaseApi}
                        openPlaylist={openPlaylist} setError={setError}/>
       case 'playlist':
-        return <PlaylistDetail id={page.id} isAlbum={page.isAlbum}
+        return <PlaylistDetail id={page.id} isAlbum={page.isAlbum} data={page.data}
                                handlePlayAndAddToList={handlePlayAndAddToList}
                                handlePlayListSwitch={handlePlayListSwitch}
                                callNeteaseApi={callNeteaseApi} setError={setError}/>
@@ -363,6 +436,8 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
       case 'lyric':
         return <LyricViewer musicId={currentMusicDetail!.id} audioRef={audioRef}
                             callNeteaseApi={callNeteaseApi} setError={setError}/>
+      case 'current-playlist':
+        return getCurrentPlaylistElement();
       default:
         return <></>
     }
@@ -378,10 +453,12 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
       <div className="flex flex-col h-screen bg-gray-100 font-inter">
         {/* 主内容区域：搜索和播放列表 */}
         {/* flex-grow 占据剩余垂直空间，p-4 作为整体内边距，overflow-hidden 防止内部内容溢出 */}
-        <div className="flex flex-col lg:flex-row flex-grow overflow-hidden bg-gray-100 p-4 h-screen">
-          <div className="flex flex-col flex-grow bg-white rounded-lg shadow-xl mr-2 h-full min-w-0">
+        <div className="flex flex-col md:flex-row flex-grow overflow-hidden bg-gray-100 p-4 h-screen">
+          <div className="flex flex-col flex-grow bg-white rounded-lg shadow-xl m-1 h-full min-w-0">
             <div className="flex border-b border-gray-300 flex-shrink-0">
-              {navBar.map((tab) =>
+              {(sidebarTooNarrow ? navBar.concat({
+                page: { type: 'current-playlist' }, text: '播放列表'
+              }) : navBar).map((tab) =>
                 <button key={tab.text} className={`
                   flex-1 text-center py-2 cursor-pointer
                   ${tab.page.type === page.type ? 'border-b-2 border-blue-600 text-blue-600 font-semibold' : 'text-gray-600'}
@@ -401,74 +478,11 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
           <div className="flex-shrink-0 w-px bg-gray-300 hidden lg:block"></div>
 
           {/* 播放列表区域 */}
-          {/* 移除了 flex-grow，并添加了 lg:w-96 来固定大屏幕下的宽度 */}
-          <div className="flex flex-col p-5 bg-white rounded-lg shadow-xl ml-2 h-full w-full lg:w-96 min-w-0">
-            {/* 错误信息 */}
-            {error &&
-                <p className="text-red-600 mb-4 flex-shrink-0">{error}</p>}
-
-            <h3 className="text-xl font-bold text-gray-800 mb-4 text-center lg:text-left">当前播放列表
-              ({playList.length} 首)</h3>
-
-            {playList.length === 0 ? (
-                <p className="text-gray-500 text-center lg:text-left">播放列表为空，快去搜索或添加音乐吧！</p>
-            ) : (
-                <>
-                  {/* 播放模式切换按钮 */}
-                  <div
-                      className="mb-4 flex justify-center lg:justify-start flex-shrink-0">
-                    <button
-                        onClick={togglePlayMode}
-                        className="px-3 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition duration-200 cursor-pointer"
-                    >
-                      播放模式: {
-                      playMode === PlayMode.Sequence ? '顺序' :
-                          playMode === PlayMode.Shuffle ? '随机' : '倒序'
-                    }
-                    </button>
-                    <button
-                        onClick={() => handlePlayListSwitch([])}
-                        className="ml-1 px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200 cursor-pointer">
-                      清空
-                    </button>
-                  </div>
-
-                  {/* 播放列表 - 此 div 将可滚动 */}
-                  <div ref={playListScrollRef}
-                       className="border border-gray-200 rounded-md flex-grow overflow-y-auto">
-                    <ul className="divide-y divide-gray-200">
-                      {playList.map((music, index) => (
-                          <li
-                              key={music.id + '-' + index}
-                              className={`group p-3 flex items-center relative transition duration-150 cursor-pointer hover:bg-gray-50 ${index === currentPlayIndex ? 'bg-blue-100 font-semibold' : ''}`}
-                              onClick={() => handlePlayListItemClick(music, index)}
-                          >
-                            {music.albumPic && (
-                                <img src={music.albumPic} alt="封面"
-                                     className="w-8 h-8 rounded mr-2 object-cover flex-shrink-0" />
-                            )}
-                            <div className="flex-grow min-w-0">
-                              <p className="text-sm text-gray-900 truncate">{music.name}</p>
-                              <p className="text-xs text-gray-500 truncate">{music.authors.join(', ')}</p>
-                            </div>
-                            <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleRemoveFromPlayList(index);
-                                }}
-                                className="absolute top-1/2 -translate-y-1/2 right-4 text-gray-400 hover:text-red-500 hidden cursor-pointer font-semibold group-hover:block"
-                                title="删除"
-                            >
-                              ×
-                            </button>
-                          </li>
-                      ))}
-                    </ul>
-
-                  </div>
-                </>
-            )}
-          </div>
+          {!sidebarTooNarrow && (
+              <div className="p-5 bg-white rounded-lg shadow-xl m-1 md:w-96 min-w-0">
+                {getCurrentPlaylistElement()}
+              </div>
+          )}
         </div>
 
         {/* 音乐播放器 - flex-shrink-0 确保它只占据自身内容的高度 */}
