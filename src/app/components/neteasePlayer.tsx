@@ -7,6 +7,7 @@ import {PlaylistDetail} from '@/app/components/playlistDetail';
 import {NeteaseUser} from '@/app/components/neteaseUser';
 import {LyricViewer} from '@/app/components/lyricViewer';
 import {useWidthFit} from "@/app/components/hook/useWidthFit";
+import {ErrorBanner} from "@/app/components/errorBanner";
 
 // 播放模式枚举
 enum PlayMode {
@@ -343,20 +344,16 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
 
   const getCurrentPlaylistElement = () => (
       <div className="flex flex-col h-full">
-        {/* 错误信息 */}
-        {error &&
-            <p className="text-red-600 mb-4 flex-shrink-0">{error}</p>}
-
-        <h3 className="text-xl font-bold text-gray-800 mb-4 text-center lg:text-left">当前播放列表
+        <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">当前播放列表
           ({playList.length} 首)</h3>
 
         {playList.length === 0 ? (
-            <p className="text-gray-500 text-center lg:text-left">播放列表为空，快去搜索或添加音乐吧！</p>
+            <p className="text-gray-500 text-center">播放列表为空，快去搜索或添加音乐吧！</p>
         ) : (
             <>
               {/* 播放模式切换按钮 */}
               <div
-                  className="mb-4 flex justify-center lg:justify-start flex-shrink-0">
+                  className="mb-4 flex justify-center flex-shrink-0">
                 <button
                     onClick={togglePlayMode}
                     className="px-3 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition duration-200 cursor-pointer"
@@ -451,6 +448,8 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
   return (
       // 外层容器使用 h-screen 确保铺满视口高度，并使用 flex-col 垂直布局
       <div className="flex flex-col h-screen bg-gray-100 font-inter">
+        <ErrorBanner message={error ?? ''}/>
+
         {/* 主内容区域：搜索和播放列表 */}
         {/* flex-grow 占据剩余垂直空间，p-4 作为整体内边距，overflow-hidden 防止内部内容溢出 */}
         <div className="flex flex-col md:flex-row flex-grow overflow-hidden bg-gray-100 p-4 h-screen">
@@ -474,12 +473,9 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
             </div>
           </div>
 
-          {/* 分隔线 */}
-          <div className="flex-shrink-0 w-px bg-gray-300 hidden lg:block"></div>
-
           {/* 播放列表区域 */}
           {!sidebarTooNarrow && (
-              <div className="p-5 bg-white rounded-lg shadow-xl m-1 md:w-96 min-w-0">
+              <div className="p-5 bg-white rounded-lg shadow-xl m-1 md:w-96 min-w-0 flex flex-col h-full">
                 {getCurrentPlaylistElement()}
               </div>
           )}
