@@ -146,7 +146,7 @@ export function Search({
         <div className="flex flex-col flex-grow min-h-0">
           {/* 固定搜索结果标题 */}
           <div className="flex-shrink-0 text-x font-semibold text-gray-700 mb-1">
-            {searchResults.length > 0 ? `搜索结果 (${totalCount} 项)` : `加载中...`}
+            {searchResults.length > 0 ? `搜索结果 (${totalCount} 项)` : (loading ? `加载中...` : `快来搜索吧`)}
           </div>
 
           {/* 可滚动结果列表 */}

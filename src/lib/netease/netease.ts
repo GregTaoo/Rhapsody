@@ -128,7 +128,7 @@ export async function getMusicLink(
     level: string,
     cookie: string[]
 ): Promise<ApiResponse> {
-  const url = `http://music.163.com/api/song/enhance/player/url/v1?encodeType=mp3&ids=[${id}]&level=${level}`;
+  const url = `https://music.163.com/api/song/enhance/player/url/v1?encodeType=mp3&ids=[${id}]&level=${level}`;
   const { data: rawData, cookie: updatedCookies } = await get(url, cookie);
 
   return {
@@ -141,7 +141,7 @@ export async function getMusicDetail(
     id: string,
     cookie: string[]
 ): Promise<ApiResponse> {
-  const url = `http://music.163.com/api/v3/song/detail?c=%5B%7B%22id%22%3A%20${id}%7D%5D`;
+  const url = `https://music.163.com/api/v3/song/detail?c=%5B%7B%22id%22%3A%20${id}%7D%5D`;
   const { data: rawData, cookie: updatedCookies } = await get(url, cookie);
 
   const songObj = rawData?.songs?.[0];
@@ -161,7 +161,7 @@ export async function getLyrics(
     id: string,
     cookie: string[]
 ): Promise<ApiResponse> {
-  const url = `http://music.163.com/api/song/lyric?id=${id}&lv=0&tv=0`;
+  const url = `https://music.163.com/api/song/lyric?id=${id}&lv=0&tv=0`;
   const { data: rawData, cookie: updatedCookies } = await get(url, cookie);
 
   const lrc = rawData?.lrc?.lyric || '';
@@ -176,13 +176,13 @@ export async function getLyrics(
 export async function getQRCodeUrl(
     cookie: string[]
 ): Promise<ApiResponse<string | null>> {
-  const url = "http://music.163.com/api/login/qrcode/unikey?type=1";
+  const url = "https://music.163.com/api/login/qrcode/unikey?type=1";
   const { data: rawData, cookie: updatedCookies } = await get(url, cookie);
 
   const uniKey = rawData?.unikey || null;
 
   return {
-    data: `http://music.163.com/login?codekey=${uniKey}`,
+    data: `https://music.163.com/login?codekey=${uniKey}`,
     cookie: updatedCookies
   };
 }
@@ -191,7 +191,7 @@ export async function getQRCodeStatus(
     uniKey: string,
     cookie: string[]
 ): Promise<ApiResponse> {
-  const url = `http://music.163.com/api/login/qrcode/client/login?type=1&key=${uniKey}`;
+  const url = `https://music.163.com/api/login/qrcode/client/login?type=1&key=${uniKey}`;
   const { data: rawData, cookie: updatedCookies } = await get(url, cookie);
 
   let status: string = 'unknown';
@@ -212,7 +212,7 @@ export async function getPlaylist(
     id: string,
     cookie: string[]
 ): Promise<ApiResponse> {
-  const url = `http://music.163.com/api/v6/playlist/detail?id=${id}&n=10000`;
+  const url = `https://music.163.com/api/v6/playlist/detail?id=${id}&n=10000`;
   const { data: rawData, cookie: updatedCookies } = await get(url, cookie);
 
   const playlistObject = rawData?.playlist || {};
@@ -245,7 +245,7 @@ export async function getAlbum(
     id: string,
     cookie: string[]
 ): Promise<ApiResponse> {
-  const url = `http://music.163.com/api/v1/album/${id}`;
+  const url = `https://music.163.com/api/v1/album/${id}`;
   const { data: rawData, cookie: updatedCookies } = await get(url, cookie);
 
   const albumDetails = rawData?.album || {};
@@ -288,7 +288,7 @@ async function _search(
     typeKey: number,
     cookie: string[]
 ): Promise<ApiResponse> {
-  const url = "http://music.163.com/api/cloudsearch/pc/";
+  const url = "https://music.163.com/api/cloudsearch/pc/";
   const data = {
     s: keyword,
     offset: 30 * page, // Each page has 30 items
@@ -378,7 +378,7 @@ export async function searchAlbum(
 export async function getDailyRecommendation(
     cookie: string[]
 ): Promise<ApiResponse> {
-  const url = "http://music.163.com/api/v3/discovery/recommend/songs";
+  const url = "https://music.163.com/api/v3/discovery/recommend/songs";
   const { data: rawData, cookie: updatedCookies } = await post(url, {}, cookie);
 
   const musics: any[] = [];
@@ -402,7 +402,7 @@ export async function getDailyRecommendation(
 export async function getLoginStatus(
     cookie: string[]
 ): Promise<ApiResponse> {
-  const accountRes = await post("http://music.163.com/api/w/nuser/account/get", {}, cookie);
+  const accountRes = await post("https://music.163.com/api/w/nuser/account/get", {}, cookie);
   const accountData = accountRes.data;
 
   if (!accountData?.account || !accountData?.profile) {
@@ -413,7 +413,7 @@ export async function getLoginStatus(
   }
 
   const uid = accountData.profile.userId;
-  const detailRes = await post(`http://music.163.com/api/v1/user/detail/${uid}`, {}, accountRes.cookie);
+  const detailRes = await post(`https://music.163.com/api/v1/user/detail/${uid}`, {}, accountRes.cookie);
   const profile = detailRes.data?.profile;
 
   return {
@@ -439,7 +439,7 @@ export async function getUserPlaylists(
     includeVideo: true,
   };
 
-  const { data: rawData, cookie: updatedCookies } = await postForm("http://music.163.com/api/user/playlist", data, cookie);
+  const { data: rawData, cookie: updatedCookies } = await postForm("https://music.163.com/api/user/playlist", data, cookie);
 
   const playlists: any[] = [];
   const array = rawData?.playlist;
@@ -463,7 +463,7 @@ export async function getUserPlaylists(
 export async function logout(
     cookie: string[]
 ): Promise<ApiResponse> {
-  await get("http://music.163.com/api/user/logout", cookie);
+  await get("https://music.163.com/api/user/logout", cookie);
 
   return {
     data: 'ok',
