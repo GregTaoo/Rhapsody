@@ -30,7 +30,7 @@ interface NeteasePlayerProps {
 
 const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
   const searchParams = useSearchParams();
-  const neteaseId = searchParams.get('id') || undefined;
+  const neteaseId = searchParams && searchParams.get('id') || undefined;
 
   const [error, setError] = useState<string | null>(null);
 
