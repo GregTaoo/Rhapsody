@@ -313,7 +313,7 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
     }
     if (neteaseId) {
       handlePlayTempMusic(neteaseId);
-      openLyricViewer(neteaseId);
+      openLyricViewer();
     }
   }, []);
 
@@ -430,8 +430,8 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
     setPage({ type: 'playlist', id, isAlbum, data })
   }
 
-  const openLyricViewer = (id: string = currentMusicDetail!.id) => {
-    setPage({ type: 'lyric', id })
+  const openLyricViewer = () => {
+    setPage({ type: 'lyric' })
   }
 
   const getPageElement = () => {
@@ -449,7 +449,7 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
         return <NeteaseUser openPlaylist={openPlaylist}
                             callNeteaseApi={callNeteaseApi} setError={setError}/>
       case 'lyric':
-        return <LyricViewer musicId={page.id} audioRef={audioRef}
+        return <LyricViewer musicId={currentMusicDetail?.id} audioRef={audioRef}
                             callNeteaseApi={callNeteaseApi} setError={setError}/>
       case 'current-playlist':
         return getCurrentPlaylistElement();
@@ -507,7 +507,7 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
                   {/* 左侧：专辑封面 + 歌曲信息 */}
                   <div
                       className="flex items-center space-x-3 flex-grow min-w-0 max-w-[40%] cursor-pointer"
-                      onClick={() => openLyricViewer()}
+                      onClick={openLyricViewer}
                   >
                     {currentMusicDetail.albumPic && (
                         <img

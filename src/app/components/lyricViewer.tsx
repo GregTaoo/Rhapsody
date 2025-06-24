@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 interface LyricViewerProps {
-  musicId: string;
+  musicId: string | undefined;
   audioRef: React.RefObject<HTMLAudioElement | null>;
   callNeteaseApi: (app: string, params?: Record<string, any>) => Promise<any>;
   setError: (msg: string) => void;
@@ -206,6 +206,8 @@ export const LyricViewer: React.FC<LyricViewerProps> = ({
       }
     }
   }, [currentLineIndex, lyrics, subLyrics]); // Depend on lyrics/subLyrics to recalculate padding if they change
+
+  if (!musicId) return null;
 
   /**
    * Determines the Tailwind CSS classes for the main lyric line based on its offset from the current line.
