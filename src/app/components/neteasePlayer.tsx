@@ -8,6 +8,7 @@ import {NeteaseUser} from '@/app/components/neteaseUser';
 import {LyricViewer} from '@/app/components/lyricViewer';
 import {useWidthFit} from "@/app/components/hook/useWidthFit";
 import {ErrorBanner} from "@/app/components/errorBanner";
+import {useSearchParams} from 'next/navigation';
 
 // 播放模式枚举
 enum PlayMode {
@@ -28,6 +29,9 @@ interface NeteasePlayerProps {
 }
 
 const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
+  const searchParams = useSearchParams();
+  const neteaseId = searchParams.get('id') || undefined;
+
   const [error, setError] = useState<string | null>(null);
 
   const [currentMusicDetail, setCurrentMusicDetail] = useState<Music | null>(null);
@@ -181,6 +185,12 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
   }, [currentPlayIndex, playList, playMode, getPreviousIndex, playMusic]);
 
   // --- 播放列表操作 ---
+  const handlePlayTempMusic = useCallback(
+      async (id: string) => {
+        const detailData: Music = await callNeteaseApi('getMusicDetail', {id: id});
+        if (detailData) playMusic(detailData);
+      }, [callNeteaseApi, playMusic]);
+
   const handlePlayAndAddToList = useCallback(
       async (id: string, isFromSearch: boolean = false) => {
         const detailData: Music = await callNeteaseApi('getMusicDetail',
@@ -291,11 +301,19 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
         if (state.playList && state.playList.length > 0) {
           setPlayList(state.playList);
           setPlayMode(state.playMode || PlayMode.Sequence);
-          const index = state.currentPlayIndex >= 0 ? state.currentPlayIndex : 0;
-          setCurrentPlayIndex(index);
-          playMusic(state.playList[index]);
+          if (!neteaseId) {
+            const index = state.currentPlayIndex >= 0 ?
+                state.currentPlayIndex :
+                0;
+            setCurrentPlayIndex(index);
+            playMusic(state.playList[index]);
+          }
         }
       } catch {}
+    }
+    if (neteaseId) {
+      handlePlayTempMusic(neteaseId);
+      openLyricViewer(neteaseId);
     }
   }, []);
 
@@ -412,8 +430,8 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
     setPage({ type: 'playlist', id, isAlbum, data })
   }
 
-  const openLyricViewer = () => {
-    setPage({ type: 'lyric' })
+  const openLyricViewer = (id: string = currentMusicDetail!.id) => {
+    setPage({ type: 'lyric', id })
   }
 
   const getPageElement = () => {
@@ -431,7 +449,7 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
         return <NeteaseUser openPlaylist={openPlaylist}
                             callNeteaseApi={callNeteaseApi} setError={setError}/>
       case 'lyric':
-        return <LyricViewer musicId={currentMusicDetail!.id} audioRef={audioRef}
+        return <LyricViewer musicId={page.id} audioRef={audioRef}
                             callNeteaseApi={callNeteaseApi} setError={setError}/>
       case 'current-playlist':
         return getCurrentPlaylistElement();
@@ -489,7 +507,7 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
                   {/* 左侧：专辑封面 + 歌曲信息 */}
                   <div
                       className="flex items-center space-x-3 flex-grow min-w-0 max-w-[40%] cursor-pointer"
-                      onClick={openLyricViewer}
+                      onClick={() => openLyricViewer()}
                   >
                     {currentMusicDetail.albumPic && (
                         <img
@@ -539,7 +557,7 @@ const NeteasePlayer: React.FC<NeteasePlayerProps> = () => {
                              w-10 h-10 flex items-center justify-center cursor-pointer"
                         title="下一首"
                     >
-                      <svg
+                    <svg
                           xmlns="http://www.w3.org/2000/svg"
                           className="h-5 w-5 rotate-180"
                           viewBox="0 0 20 20"

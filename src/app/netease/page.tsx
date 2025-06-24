@@ -1,7 +1,7 @@
 import NeteasePlayer from '../components/neteasePlayer';
 
 export const metadata = {
-  title: 'Music Player',
+  title: 'Rhapsody Player',
 };
 
 const Home = () => {
