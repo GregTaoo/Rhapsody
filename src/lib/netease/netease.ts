@@ -157,6 +157,38 @@ export async function getMusicDetail(
   };
 }
 
+export async function getMusicDetails(
+    ids: string[],
+    cookie: string[]
+): Promise<ApiResponse> {
+  if (ids.length === 0) {
+    return { data: [], cookie };
+  }
+
+  const cParam = encodeURIComponent(
+      JSON.stringify(ids.map((id) => ({ id: Number(id) })))
+  );
+
+  const url = `https://music.163.com/api/v3/song/detail?c=${cParam}`;
+  const { data: rawData, cookie: updatedCookies } = await get(url, cookie);
+
+  const songs = rawData?.songs || [];
+  const result = songs.map((song: any) => ({
+    id: String(song.id),
+    name: song.name || '',
+    duration: song.dt ?? 0,
+    authors: Array.isArray(song.ar)
+        ? song.ar.map((author: any) => author.name)
+        : [],
+    albumPic: song.al?.picUrl ?? '',
+  }));
+
+  return {
+    data: result,
+    cookie: updatedCookies,
+  };
+}
+
 export async function getLyrics(
     id: string,
     cookie: string[]
@@ -216,10 +248,13 @@ export async function getPlaylist(
   const { data: rawData, cookie: updatedCookies } = await get(url, cookie);
 
   const playlistObject = rawData?.playlist || {};
-
   const songs: any[] = [];
+  const existingIds = new Set<string>();
+
+  // 1. 已有 tracks
   if (Array.isArray(playlistObject.tracks)) {
     playlistObject.tracks.forEach((track: any) => {
+      existingIds.add(String(track.id));
       songs.push({
         id: track.id,
         name: track.name || '',
@@ -230,6 +265,33 @@ export async function getPlaylist(
     });
   }
 
+  // 2. 找出 trackIds 中缺失歌曲
+  const missingIds: string[] = [];
+  if (Array.isArray(playlistObject.trackIds)) {
+    for (const item of playlistObject.trackIds) {
+      const tid = String(item.id);
+      if (!existingIds.has(tid)) {
+        missingIds.push(tid);
+      }
+    }
+  }
+
+  // 3. 使用批量接口拉取缺失歌曲 TODO: BATCH_SIZE 未知
+  const BATCH_SIZE = 10000;
+  for (let i = 0; i < missingIds.length; i += BATCH_SIZE) {
+    const batch = missingIds.slice(i, i + BATCH_SIZE);
+    const detail = await getMusicDetails(batch, updatedCookies);
+    updatedCookies.splice(0, updatedCookies.length, ...detail.cookie); // 同步 cookie
+
+    const tracks = detail.data;
+    if (Array.isArray(tracks)) {
+      for (const track of tracks) {
+        songs.push(track); // track 结构与 MusicDetail 一致
+      }
+    }
+  }
+
+  // 4. 其它元数据
   const creatorName = playlistObject.creator?.nickname || '';
   const name = playlistObject.name || '';
   const createTime = playlistObject.createTime ? formattedTime(playlistObject.createTime) : '';
