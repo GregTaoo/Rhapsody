@@ -70,7 +70,7 @@ function parseLRC(raw: string): LyricLine[] {
 
   // 按时间排序
   result.sort((a, b) => a.time - b.time);
-  return result ? result : [{ time: 0, text: '无歌词' }];
+  return result;
 }
 
 /**
@@ -116,8 +116,10 @@ export const LyricViewer: React.FC<LyricViewerProps> = ({
       try {
         const data = await callNeteaseApi('getLyrics', { id: musicId });
         // Corrected API response structure access as per typical Netease API behavior
-        const mainLrc = parseLRC(data.lrc || '');
+        let mainLrc = parseLRC(data.lrc || '');
         const subLrc = parseLRC(data.sub_lrc || '');
+
+        mainLrc = mainLrc.length > 0 ? mainLrc : [{ time: 0, text: '无歌词' }];
 
         if (mainLrc.length === 0 && subLrc.length === 0) {
           setError('暂无歌词');
