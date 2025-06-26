@@ -70,7 +70,7 @@ function parseLRC(raw: string): LyricLine[] {
 
   // 按时间排序
   result.sort((a, b) => a.time - b.time);
-  return result;
+  return result ? result : [{ time: 0, text: '无歌词' }];
 }
 
 /**
@@ -82,7 +82,7 @@ function parseLRC(raw: string): LyricLine[] {
 function mergeLyrics(main: LyricLine[], sub: LyricLine[]): { main: string; sub?: string; time: number }[] {
   // Map through main lyrics and find a corresponding sub lyric within a small time window
   return main.map((line) => {
-    const subLine = sub.find((s) => Math.abs(s.time - line.time) < 0.5); // 0.5 seconds tolerance
+    const subLine = sub.find((s) => Math.abs(s.time - line.time) <= 0.5); // 0.5 seconds tolerance
     return { main: line.text, sub: subLine?.text, time: line.time };
   });
 }
