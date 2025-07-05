@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from 'axios';
+import axios, {AxiosResponse} from 'axios';
 
 const APP_VERSION = '3.1.11';
 
@@ -48,8 +48,8 @@ export type ApiResponse<T = any> = {
 };
 
 async function get(
-    url: string,
-    cookie: string[]
+  url: string,
+  cookie: string[]
 ): Promise<ApiResponse> {
   const fullCookie = ensureInitCookies(cookie);
   const cookieHeader = fullCookie.join('; ');
@@ -71,9 +71,9 @@ async function get(
 }
 
 async function post(
-    url: string,
-    data: any,
-    cookie: string[]
+  url: string,
+  data: any,
+  cookie: string[]
 ): Promise<ApiResponse> {
   const fullCookie = ensureInitCookies(cookie);
   const cookieHeader = fullCookie.join('; ');
@@ -96,23 +96,23 @@ async function post(
 }
 
 async function postForm(
-    url: string,
-    data: any,
-    cookie: string[]
+  url: string,
+  data: any,
+  cookie: string[]
 ): Promise<ApiResponse> {
   const fullCookie = ensureInitCookies(cookie);
   const cookieHeader = fullCookie.join('; ');
 
   const res: AxiosResponse = await axios.post(
-      url,
-      new URLSearchParams(data as Record<string, string>).toString(),
-      {
-        headers: {
-          ...HEADERS,
-          Cookie: cookieHeader,
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      }
+    url,
+    new URLSearchParams(data as Record<string, string>).toString(),
+    {
+      headers: {
+        ...HEADERS,
+        Cookie: cookieHeader,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    }
   );
 
   const setCookieHeader = res.headers['set-cookie'] || [];
@@ -123,13 +123,14 @@ async function postForm(
     cookie: updatedCookies,
   };
 }
+
 export async function getMusicLink(
-    id: string,
-    level: string,
-    cookie: string[]
+  id: string,
+  level: string,
+  cookie: string[]
 ): Promise<ApiResponse> {
   const url = `https://music.163.com/api/song/enhance/player/url/v1?encodeType=mp3&ids=[${id}]&level=${level}`;
-  const { data: rawData, cookie: updatedCookies } = await get(url, cookie);
+  const {data: rawData, cookie: updatedCookies} = await get(url, cookie);
 
   return {
     data: rawData.data?.[0]?.url,
@@ -138,39 +139,39 @@ export async function getMusicLink(
 }
 
 export async function getMusicDetail(
-    id: string,
-    cookie: string[]
+  id: string,
+  cookie: string[]
 ): Promise<ApiResponse> {
   const url = `https://music.163.com/api/v3/song/detail?c=%5B%7B%22id%22%3A%20${id}%7D%5D`;
-  const { data: rawData, cookie: updatedCookies } = await get(url, cookie);
+  const {data: rawData, cookie: updatedCookies} = await get(url, cookie);
 
   const songObj = rawData?.songs?.[0];
   const name = songObj.name || '';
   const duration = songObj.dt ?? 0;
   const authors = Array.isArray(songObj.ar)
-      ? songObj.ar.map((author: any) => author.name) : [];
+    ? songObj.ar.map((author: any) => author.name) : [];
   const albumPic = songObj.al?.picUrl ?? '';
 
   return {
-    data: { id, name, duration, authors, albumPic },
+    data: {id, name, duration, authors, albumPic},
     cookie: updatedCookies,
   };
 }
 
 export async function getMusicDetails(
-    ids: string[],
-    cookie: string[]
+  ids: string[],
+  cookie: string[]
 ): Promise<ApiResponse> {
   if (ids.length === 0) {
-    return { data: [], cookie };
+    return {data: [], cookie};
   }
 
   const cParam = encodeURIComponent(
-      JSON.stringify(ids.map((id) => ({ id: Number(id) })))
+    JSON.stringify(ids.map((id) => ({id: Number(id)})))
   );
 
   const url = `https://music.163.com/api/v3/song/detail?c=${cParam}`;
-  const { data: rawData, cookie: updatedCookies } = await get(url, cookie);
+  const {data: rawData, cookie: updatedCookies} = await get(url, cookie);
 
   const songs = rawData?.songs || [];
   const result = songs.map((song: any) => ({
@@ -178,8 +179,8 @@ export async function getMusicDetails(
     name: song.name || '',
     duration: song.dt ?? 0,
     authors: Array.isArray(song.ar)
-        ? song.ar.map((author: any) => author.name)
-        : [],
+      ? song.ar.map((author: any) => author.name)
+      : [],
     albumPic: song.al?.picUrl ?? '',
   }));
 
@@ -190,26 +191,26 @@ export async function getMusicDetails(
 }
 
 export async function getLyrics(
-    id: string,
-    cookie: string[]
+  id: string,
+  cookie: string[]
 ): Promise<ApiResponse> {
   const url = `https://music.163.com/api/song/lyric?id=${id}&lv=0&tv=0`;
-  const { data: rawData, cookie: updatedCookies } = await get(url, cookie);
+  const {data: rawData, cookie: updatedCookies} = await get(url, cookie);
 
   const lrc = rawData?.lrc?.lyric || '';
   const sub_lrc = rawData?.tlyric?.lyric || '';
 
   return {
-    data: { lrc, sub_lrc },
+    data: {lrc, sub_lrc},
     cookie: updatedCookies,
   };
 }
 
 export async function getQRCodeUrl(
-    cookie: string[]
+  cookie: string[]
 ): Promise<ApiResponse<string | null>> {
   const url = "https://music.163.com/api/login/qrcode/unikey?type=1";
-  const { data: rawData, cookie: updatedCookies } = await get(url, cookie);
+  const {data: rawData, cookie: updatedCookies} = await get(url, cookie);
 
   const uniKey = rawData?.unikey || null;
 
@@ -220,11 +221,11 @@ export async function getQRCodeUrl(
 }
 
 export async function getQRCodeStatus(
-    uniKey: string,
-    cookie: string[]
+  uniKey: string,
+  cookie: string[]
 ): Promise<ApiResponse> {
   const url = `https://music.163.com/api/login/qrcode/client/login?type=1&key=${uniKey}`;
-  const { data: rawData, cookie: updatedCookies } = await get(url, cookie);
+  const {data: rawData, cookie: updatedCookies} = await get(url, cookie);
 
   let status: string = 'unknown';
   const code = rawData?.code;
@@ -237,15 +238,15 @@ export async function getQRCodeStatus(
     status = 'success';
   }
 
-  return { data: status, cookie: updatedCookies };
+  return {data: status, cookie: updatedCookies};
 }
 
 export async function getPlaylist(
-    id: string,
-    cookie: string[]
+  id: string,
+  cookie: string[]
 ): Promise<ApiResponse> {
   const url = `https://music.163.com/api/v6/playlist/detail?id=${id}&n=10000`;
-  const { data: rawData, cookie: updatedCookies } = await get(url, cookie);
+  const {data: rawData, cookie: updatedCookies} = await get(url, cookie);
 
   const playlistObject = rawData?.playlist || {};
   const songs: any[] = [];
@@ -256,7 +257,7 @@ export async function getPlaylist(
     playlistObject.tracks.forEach((track: any) => {
       existingIds.add(String(track.id));
       songs.push({
-        id: track.id,
+        id: String(track.id),
         name: track.name || '',
         duration: track.dt ?? 0,
         authors: Array.isArray(track.ar) ? track.ar.map((author: any) => author.name) : [],
@@ -298,17 +299,17 @@ export async function getPlaylist(
   const description = playlistObject.description || '';
 
   return {
-    data: { creatorName, name, createTime, description, songs },
+    data: {creatorName, name, createTime, description, songs},
     cookie: updatedCookies,
   };
 }
 
 export async function getAlbum(
-    id: string,
-    cookie: string[]
+  id: string,
+  cookie: string[]
 ): Promise<ApiResponse> {
   const url = `https://music.163.com/api/v1/album/${id}`;
-  const { data: rawData, cookie: updatedCookies } = await get(url, cookie);
+  const {data: rawData, cookie: updatedCookies} = await get(url, cookie);
 
   const albumDetails = rawData?.album || {};
 
@@ -318,7 +319,7 @@ export async function getAlbum(
   if (Array.isArray(rawData?.songs)) {
     rawData.songs.forEach((song: any) => {
       songs.push({
-        id: song.id,
+        id: String(song.id),
         name: song.name || '',
         duration: song.dt ?? 0,
         authors: Array.isArray(song.ar) ? song.ar.map((author: any) => author.name) : [],
@@ -333,7 +334,7 @@ export async function getAlbum(
   const description = albumDetails.description || '';
 
   return {
-    data: { creatorName, name, createTime, description, songs },
+    data: {creatorName, name, createTime, description, songs},
     cookie: updatedCookies,
   };
 }
@@ -345,10 +346,10 @@ const SearchType = {
 };
 
 async function _search(
-    keyword: string,
-    page: number,
-    typeKey: number,
-    cookie: string[]
+  keyword: string,
+  page: number,
+  typeKey: number,
+  cookie: string[]
 ): Promise<ApiResponse> {
   const url = "https://music.163.com/api/cloudsearch/pc/";
   const data = {
@@ -363,11 +364,11 @@ async function _search(
 }
 
 export async function searchMusic(
-    keyword: string,
-    page: number,
-    cookie: string[]
+  keyword: string,
+  page: number,
+  cookie: string[]
 ): Promise<ApiResponse> {
-  const { data: rawData, cookie: updatedCookies } = await _search(keyword, page, SearchType.MUSIC, cookie);
+  const {data: rawData, cookie: updatedCookies} = await _search(keyword, page, SearchType.MUSIC, cookie);
 
   const songs: any[] = [];
   const songsArray = rawData?.result?.songs;
@@ -385,15 +386,15 @@ export async function searchMusic(
     });
   }
 
-  return { data: { songs, songCount }, cookie: updatedCookies };
+  return {data: {songs, songCount}, cookie: updatedCookies};
 }
 
 export async function searchPlaylist(
-    keyword: string,
-    page: number,
-    cookie: string[]
+  keyword: string,
+  page: number,
+  cookie: string[]
 ): Promise<ApiResponse> {
-  const { data: rawData, cookie: updatedCookies } = await _search(keyword, page, SearchType.PLAYLIST, cookie);
+  const {data: rawData, cookie: updatedCookies} = await _search(keyword, page, SearchType.PLAYLIST, cookie);
 
   const playlists: any[] = [];
   const playlistsArray = rawData?.result?.playlists;
@@ -409,15 +410,15 @@ export async function searchPlaylist(
     });
   }
 
-  return { data: { playlists, playlistCount }, cookie: updatedCookies };
+  return {data: {playlists, playlistCount}, cookie: updatedCookies};
 }
 
 export async function searchAlbum(
-    keyword: string,
-    page: number,
-    cookie: string[]
+  keyword: string,
+  page: number,
+  cookie: string[]
 ): Promise<ApiResponse> {
-  const { data: rawData, cookie: updatedCookies } = await _search(keyword, page, SearchType.ALBUM, cookie);
+  const {data: rawData, cookie: updatedCookies} = await _search(keyword, page, SearchType.ALBUM, cookie);
 
   const albums: any[] = [];
   const albumsArray = rawData?.result?.albums;
@@ -434,14 +435,14 @@ export async function searchAlbum(
     });
   }
 
-  return { data: { albums, albumCount }, cookie: updatedCookies };
+  return {data: {albums, albumCount}, cookie: updatedCookies};
 }
 
 export async function getDailyRecommendation(
-    cookie: string[]
+  cookie: string[]
 ): Promise<ApiResponse> {
   const url = "https://music.163.com/api/v3/discovery/recommend/songs";
-  const { data: rawData, cookie: updatedCookies } = await post(url, {}, cookie);
+  const {data: rawData, cookie: updatedCookies} = await post(url, {}, cookie);
 
   const musics: any[] = [];
   const dailySongsArray = rawData?.data?.dailySongs;
@@ -458,11 +459,11 @@ export async function getDailyRecommendation(
     });
   }
 
-  return { data: musics, cookie: updatedCookies };
+  return {data: musics, cookie: updatedCookies};
 }
 
 export async function getLoginStatus(
-    cookie: string[]
+  cookie: string[]
 ): Promise<ApiResponse> {
   const accountRes = await post("https://music.163.com/api/w/nuser/account/get", {}, cookie);
   const accountData = accountRes.data;
@@ -490,9 +491,9 @@ export async function getLoginStatus(
 }
 
 export async function getUserPlaylists(
-    uid: string,
-    page: number,
-    cookie: string[]
+  uid: string,
+  page: number,
+  cookie: string[]
 ): Promise<ApiResponse> {
   const data = {
     uid,
@@ -501,7 +502,10 @@ export async function getUserPlaylists(
     includeVideo: true,
   };
 
-  const { data: rawData, cookie: updatedCookies } = await postForm("https://music.163.com/api/user/playlist", data, cookie);
+  const {
+    data: rawData,
+    cookie: updatedCookies
+  } = await postForm("https://music.163.com/api/user/playlist", data, cookie);
 
   const playlists: any[] = [];
   const array = rawData?.playlist;
@@ -523,7 +527,7 @@ export async function getUserPlaylists(
 }
 
 export async function logout(
-    cookie: string[]
+  cookie: string[]
 ): Promise<ApiResponse> {
   await get("https://music.163.com/api/user/logout", cookie);
 

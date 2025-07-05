@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
 interface LyricViewerProps {
   musicId: string | undefined;
@@ -63,7 +63,7 @@ function parseLRC(raw: string): LyricLine[] {
       const cleanText = text.replace(/\[.*?]/g, '').trim();
 
       if (cleanText && !cleanText.startsWith('//')) {
-        result.push({ time, text: cleanText });
+        result.push({time, text: cleanText});
       }
     }
   }
@@ -73,17 +73,11 @@ function parseLRC(raw: string): LyricLine[] {
   return result;
 }
 
-/**
- * Merges main lyrics with sub (translation) lyrics based on time proximity.
- * @param main - Array of main lyric lines.
- * @param sub - Array of sub lyric lines.
- * @returns An array of objects, each containing main text, optional sub text, and time.
- */
 function mergeLyrics(main: LyricLine[], sub: LyricLine[]): { main: string; sub?: string; time: number }[] {
   // Map through main lyrics and find a corresponding sub lyric within a small time window
   return main.map((line) => {
     const subLine = sub.find((s) => Math.abs(s.time - line.time) <= 0.5); // 0.5 seconds tolerance
-    return { main: line.text, sub: subLine?.text, time: line.time };
+    return {main: line.text, sub: subLine?.text, time: line.time};
   });
 }
 
@@ -114,12 +108,12 @@ export const LyricViewer: React.FC<LyricViewerProps> = ({
       setError(''); // Clear previous errors
 
       try {
-        const data = await callNeteaseApi('getLyrics', { id: musicId });
+        const data = await callNeteaseApi('getLyrics', {id: musicId});
         // Corrected API response structure access as per typical Netease API behavior
         let mainLrc = parseLRC(data.lrc || '');
         const subLrc = parseLRC(data.sub_lrc || '');
 
-        mainLrc = mainLrc.length > 0 ? mainLrc : [{ time: 0, text: '无歌词' }];
+        mainLrc = mainLrc.length > 0 ? mainLrc : [{time: 0, text: '无歌词'}];
 
         if (mainLrc.length === 0 && subLrc.length === 0) {
           setError('暂无歌词');
@@ -223,7 +217,7 @@ export const LyricViewer: React.FC<LyricViewerProps> = ({
     if (offset === 0) {
       return 'text-gray-900 text-3xl font-bold opacity-100 transition-all duration-300'; // Increased to text-4xl
     }
-        // Symmetrical fading and sizing for lines around the current one
+      // Symmetrical fading and sizing for lines around the current one
     // Lines directly adjacent to current
     else if (absOffset === 1) {
       return 'text-gray-700 text-2xl opacity-50 transition-all duration-300';
@@ -264,39 +258,41 @@ export const LyricViewer: React.FC<LyricViewerProps> = ({
   };
 
   return (
-      <div
-          ref={scrollContainerRef}
-          className="flex flex-col h-full min-h-0 overflow-y-auto items-center px-4 py-8 custom-scrollbar"
-      >
-        {/* Render placeholder empty lines at the top to allow the first few lines to scroll to the center */}
-        {Array(paddingLines).fill(null).map((_, i) => (
-            <div key={`padding-top-${i}`} className="w-full pt-20"></div> // Increased padding height for better centering
-        ))}
+    <div
+      ref={scrollContainerRef}
+      className="flex flex-col h-full min-h-0 overflow-y-auto items-center px-4 py-8 custom-scrollbar"
+    >
+      {/* Render placeholder empty lines at the top to allow the first few lines to scroll to the center */}
+      {Array(paddingLines).fill(null).map((_, i) => (
+        <div key={`padding-top-${i}`} className="w-full pt-20"></div> // Increased padding height for better centering
+      ))}
 
-        {/* Map through merged lyrics to display them */}
-        {merged.map((line, idx) => {
-          const offset = idx - currentLineIndex;
-          return (
-              <div
-                  key={idx}
-                  ref={(el: HTMLDivElement | null) => { lineRefs.current[idx] = el; }} // Explicitly typed 'el'
-                  // Apply dynamic classes based on offset for styling (color, size, opacity)
-                  className={`text-center py-4 ${getMainLyricClass(offset)}`}
-              >
-                  {/* Main lyric line */}
-                    <p className="whitespace-pre-wrap">{line.main || ' '}</p>
-                    {/* Sub (translation) lyric line, only if available */}
-                    {line.sub && (
-                        <p className={`whitespace-pre-wrap ${getSubLyricClass(offset)}`}>{line.sub}</p>
-                    )}
-              </div>
-          );
-        })}
+      {/* Map through merged lyrics to display them */}
+      {merged.map((line, idx) => {
+        const offset = idx - currentLineIndex;
+        return (
+          <div
+            key={idx}
+            ref={(el: HTMLDivElement | null) => {
+              lineRefs.current[idx] = el;
+            }} // Explicitly typed 'el'
+            // Apply dynamic classes based on offset for styling (color, size, opacity)
+            className={`text-center py-4 ${getMainLyricClass(offset)}`}
+          >
+            {/* Main lyric line */}
+            <p className="whitespace-pre-wrap">{line.main || ' '}</p>
+            {/* Sub (translation) lyric line, only if available */}
+            {line.sub && (
+              <p className={`whitespace-pre-wrap ${getSubLyricClass(offset)}`}>{line.sub}</p>
+            )}
+          </div>
+        );
+      })}
 
-        {/* Render placeholder empty lines at the bottom to allow the last few lines to scroll to the center */}
-        {Array(paddingLines).fill(null).map((_, i) => (
-            <div key={`padding-bottom-${i}`} className="w-full pt-20"></div> // Increased padding height for better centering
-        ))}
-      </div>
+      {/* Render placeholder empty lines at the bottom to allow the last few lines to scroll to the center */}
+      {Array(paddingLines).fill(null).map((_, i) => (
+        <div key={`padding-bottom-${i}`} className="w-full pt-20"></div> // Increased padding height for better centering
+      ))}
+    </div>
   );
 };

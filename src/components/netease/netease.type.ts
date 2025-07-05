@@ -6,3 +6,11 @@ export interface Music {
   authors: string[];
   albumPic: string;
 }
+
+export interface Playlist {
+  creatorName: string,
+  name: string,
+  createTime: string,
+  description: string,
+  songs: Music[],
+}
