@@ -21,7 +21,7 @@ export default function Layout({ children }: Readonly<{ children: React.ReactNod
 
   // 边界情况：窄屏加播放列表tab
   const navBar = sidebarTooNarrow
-    ? [...baseNavBar, { href: '/netease/current-playlist', text: '播放列表' }]
+    ? [...baseNavBar, { href: '/netease/playlistPanel', text: '播放列表' }]
     : baseNavBar;
 
   const tabs = navBar.map(tab => ({
