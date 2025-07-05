@@ -15,6 +15,7 @@ export default function Home() {
   return (
     <SearchPanel
       openPlaylist={(id: string) => router.push('/netease/playlist/' + id)}
+      openAlbum={(id: string) => router.push('/netease/album/' + id)}
       handlePlayAndAddToList={playAndAdd}
       callNeteaseApi={callNeteaseApi}
       setError={setError}

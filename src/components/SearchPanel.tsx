@@ -8,8 +8,8 @@ import {getLocalStorage} from '@/lib/util';
 type SearchType = 'music' | 'playlist' | 'album';
 
 export function SearchPanel({
-                         handlePlayAndAddToList, openPlaylist, callNeteaseApi, setError,
-                       }) {
+                              handlePlayAndAddToList, openPlaylist, openAlbum, callNeteaseApi, setError,
+                            }) {
   const [searchKeyword, setSearchKeyword] = useState<string>(() => getLocalStorage('searchKeyword', ''));
   const [searchType, setSearchType] = useState<SearchType>(() => getLocalStorage('searchType', 'music'));
 
@@ -159,8 +159,10 @@ export function SearchPanel({
                 onClick={() => {
                   if (searchType === 'music')
                     handlePlayAndAddToList(item.id, true);
+                  else if (searchType === 'album')
+                    openAlbum(item.id);
                   else
-                    openPlaylist(item.id, searchType === 'album');
+                    openPlaylist(item.id);
                 }}
                 className="p-3 flex items-center transition duration-150 hover:bg-gray-50 cursor-pointer"
               >
